@@ -12,26 +12,28 @@
         android:layout_width="match_parent">
 
         <androidx.appcompat.widget.Toolbar
-            android:layout_height="?attr/actionBarSize"
             android:layout_width="match_parent"
-            app:layout_scrollFlags="scroll|enterAlways"></androidx.appcompat.widget.Toolbar>
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/darker_gray"
+            app:layout_scrollFlags="enterAlways"></androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
 
-            app:tabMode="scrollable">
+            android:background="@android:color/darker_gray"
+            app:tabMode="fixed">
 
             <com.google.android.material.tabs.TabItem
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Tab1" />
+                android:layout_height="wrap_content"
+                android:text="@string/today" />
 
             <com.google.android.material.tabs.TabItem
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Tab2" />
+                android:layout_height="wrap_content"
+                android:text="@string/week" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
