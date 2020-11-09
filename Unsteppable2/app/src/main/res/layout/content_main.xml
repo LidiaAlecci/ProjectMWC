@@ -6,24 +6,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent">
+        android:isScrollContainer="false">
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/darker_gray"
-            app:layout_scrollFlags="enterAlways"></androidx.appcompat.widget.Toolbar>
+            android:background="@color/colorPrimary"
+            app:layout_scrollFlags="enterAlways|snap"></androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
 
-            android:background="@android:color/darker_gray"
-            app:tabMode="fixed">
+            android:background="@color/colorPrimary"
+            android:overScrollMode="always"
+            app:tabIndicatorColor="#FF9E4B"
+            app:tabMode="fixed"
+            app:tabSelectedTextColor="@color/colorAccent"
+            app:tabTextColor="@android:color/white">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -38,14 +44,17 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tab3" />
+                android:text="@string/month" />
         </com.google.android.material.tabs.TabLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
+
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
+        android:background="#E3E2E2"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
