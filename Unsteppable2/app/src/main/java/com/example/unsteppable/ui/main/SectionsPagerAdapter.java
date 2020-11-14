@@ -31,7 +31,14 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
-        Log.d("sectionsPageAdapter","getItem");
+        switch(position){
+            case 0:
+                return TodayTabFragment.newInstance();
+            case 1:
+                return WeekTabFragment.newInstance();
+            case 2:
+                return MonthTabFragment.newInstance();
+        }
         return PlaceholderFragment.newInstance(position + 1);
     }
 
@@ -43,7 +50,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        // Show 2 total pages.
+        // Show 3 total pages.
         return 3;
     }
 }
