@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
 
+import me.itangqi.waveloadingview.WaveLoadingView;
+
 public class TodayTabFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
@@ -30,7 +32,8 @@ public class TodayTabFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_today_tab, container, false);
-        
+        WaveLoadingView mWaveLoad = root.findViewById(R.id.waveLoadingView);
+        mWaveLoad.setAnimDuration(5000);
         return root;
 
 

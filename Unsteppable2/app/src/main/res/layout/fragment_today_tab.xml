@@ -17,55 +17,86 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/stepsGoal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/goal"
-            android:textAlignment="center"
-            android:textSize="20sp" />
+<!--        <TextView-->
+<!--            android:id="@+id/stepsGoal"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="8dp"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            android:text="@string/goal"-->
+<!--            android:textAlignment="center"-->
+<!--            android:textSize="20sp" />-->
 
-        <TextView
-            android:id="@+id/stepsCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="@android:color/white"
-            android:text="@string/_0"
-            android:textAlignment="center"
-            android:textSize="65sp" />
+<!--        <TextView-->
+<!--            android:id="@+id/stepsCount"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="8dp"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            android:textColor="@android:color/white"-->
+<!--            android:text="@string/_0"-->
+<!--            android:textAlignment="center"-->
+<!--            android:textSize="65sp" />-->
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/steps"
-            android:textAlignment="center"
-            android:textSize="20sp" />
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="8dp"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            android:text="@string/steps"-->
+<!--            android:textAlignment="center"-->
+<!--            android:textSize="20sp" />-->
     </LinearLayout>
 
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="match_parent"
-        android:layout_height="350dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="124dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+    <me.itangqi.waveloadingview.WaveLoadingView
+        android:id="@+id/waveLoadingView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/linearLayout"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
         app:layout_constraintTop_toTopOf="parent"
-        style="?android:progressBarStyleHorizontal"
-        android:progressDrawable="@drawable/circle"
-        android:progress="20"/>
+        app:wlv_borderColor="@color/colorAccent"
+        app:wlv_borderWidth="3dp"
+        app:wlv_progressValue="40"
+        app:wlv_round_rectangle="false"
+        app:wlv_shapeType="circle"
+        app:wlv_titleCenter="@string/_0"
+        app:wlv_titleCenterColor="@android:color/white"
+        app:wlv_titleCenterSize="24sp"
+        app:wlv_titleCenterStrokeColor="@android:color/holo_blue_dark"
+        app:wlv_titleCenterStrokeWidth="3dp"
+        app:wlv_titleBottom="@string/steps"
+        app:wlv_triangle_direction="north"
+        app:wlv_waveAmplitude="10"
 
+        app:wlv_waveColor="@color/colorAccent" />
+    <!--    <ProgressBar-->
+<!--        android:id="@+id/progressBar"-->
+<!--        style="?android:progressBarStyleHorizontal"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:progress="20"-->
+<!--        android:progressDrawable="@drawable/circle"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/steps_to_goal"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Steps to Goal:"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/linearLayout"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
