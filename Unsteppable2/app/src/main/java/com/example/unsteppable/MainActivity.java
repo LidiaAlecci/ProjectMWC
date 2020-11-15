@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.unsteppable.ui.main.SectionsPagerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -22,16 +21,13 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
-import androidx.navigation.NavHost;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
     /** START THINGS FOR SERVICE **/
     //TextView stepCountTxV; // TODO Debug
-    TextView stepDetectTxV; // TODO Debug
+    TextView stepCounterTxV; // TODO Debug
+    //String countedStep;
     String countedStep;
-    String detectedStep;
     //private Intent intent;
     private static final String TAG = "SENSOR_EVENT";
 
@@ -52,10 +48,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
-            detectedStep = intent.getStringExtra("Detected_Step");
-            Log.d(TAG, String.valueOf(detectedStep));
+            countedStep = intent.getStringExtra("Counted_Step");
+            Log.d(TAG, String.valueOf(countedStep));
 
-            stepDetectTxV.setText('"' + String.valueOf(detectedStep) + '"' + " Steps Detected");
+            stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
         }
     };
 
@@ -113,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         startService(new Intent(getBaseContext(), StepCountService.class));
         registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
         //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
-        stepDetectTxV = (TextView)findViewById(R.id.stepDetectTxV);
+        stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
         /** END THINGS FOR SERVICE **/
     }
 

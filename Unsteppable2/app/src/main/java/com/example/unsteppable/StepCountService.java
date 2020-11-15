@@ -1,6 +1,5 @@
 package com.example.unsteppable;
 
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -17,11 +16,12 @@ import androidx.annotation.Nullable;
 public class StepCountService extends Service implements SensorEventListener {
     SensorManager sensorManager;
    // Sensor stepCounterSensor;
-    Sensor sensorStepDetector;
+    Sensor sensorStepCounter;
     private static final String TAG = "STEP_SERVICE";
     private final Handler handler = new Handler();
-    // Android step detector
-    public int androidStepDetector = 0;
+    // Android step counter
+    public int androidStepCounter = 0;
+    public int oldSteps = 0;
     boolean serviceStopped; // Boolean variable to control if the service is stopped
 
 
@@ -46,9 +46,9 @@ public class StepCountService extends Service implements SensorEventListener {
         handler.post(updateBroadcastData);
 
         sensorManager = (SensorManager) getSystemService(getApplicationContext().SENSOR_SERVICE);
-        sensorStepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-        if (sensorStepDetector != null) {
-            sensorManager.registerListener(this, sensorStepDetector, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorStepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        if (sensorStepCounter != null) {
+            sensorManager.registerListener(this, sensorStepCounter, SensorManager.SENSOR_DELAY_NORMAL);
         }else {
             //handler.post(new ToastRunnable(R.string.step_not_available));
         }
@@ -67,10 +67,15 @@ public class StepCountService extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_STEP_DETECTOR:
+            case Sensor.TYPE_STEP_COUNTER:
                 // Calculate the number of steps
-                androidStepDetector += (int) event.values[0];
-                Log.v(TAG, "Num.steps: " + String.valueOf(androidStepDetector));
+                int countSteps = (int) event.values[0];
+                if (oldSteps == 0) {
+                    oldSteps = (int) event.values[0];
+                }
+                //androidStepCounter += (int) event.values[0];
+                androidStepCounter = countSteps - oldSteps;
+                Log.v(TAG, "Num.steps: " + String.valueOf(androidStepCounter));
         }
     }
 
@@ -114,8 +119,8 @@ public class StepCountService extends Service implements SensorEventListener {
     private void broadcastSensorValue() {
         Log.v(TAG, "Data to Activity");
         // add data to intent
-        intent.putExtra("Detected_Step_Int", androidStepDetector);
-        intent.putExtra("Detected_Step", String.valueOf(androidStepDetector));
+        intent.putExtra("Counted_Step_Int", androidStepCounter);
+        intent.putExtra("Counted_Step", String.valueOf(androidStepCounter));
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
     }

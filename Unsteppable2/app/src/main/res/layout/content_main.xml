@@ -21,11 +21,11 @@
 
 
     <TextView
-        android:id="@+id/stepDetectTxV"
+        android:id="@+id/stepCountTxV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="@string/detect_steps"
+        android:text="@string/counted_steps"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#3A2DEF"
         tools:layout_editor_absoluteX="145dp"
