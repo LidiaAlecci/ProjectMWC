@@ -6,7 +6,7 @@
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <!-- Required for 29+. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -34,7 +34,13 @@
         </activity>
 
         <service android:name=".StepCountService" />
-
+        <receiver
+            android:name="com.example.unsteppable.SensorRestarterBroadcastReceiverWithValue">
+            <!--
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">-->
+        </receiver>
     </application>
 
 </manifest>

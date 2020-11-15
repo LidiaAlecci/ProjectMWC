@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -14,7 +15,6 @@ import android.view.Menu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.unsteppable.ui.main.SectionsPagerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -22,40 +22,49 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
-import androidx.navigation.NavHost;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity {
 
     // PERMISSION
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
+    private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
     private boolean runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
 
     /** START THINGS FOR SERVICE **/
     //TextView stepCountTxV; // TODO Debug
-    TextView stepDetectTxV; // TODO Debug
+    TextView stepCounterTxV; // TODO Debug
+    //String countedStep;
     String countedStep;
-    String detectedStep;
     //private Intent intent;
     private static final String TAG = "SENSOR_EVENT";
+    private boolean isForeground = true;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isForeground = false;
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isForeground = true;
+    }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
-            detectedStep = intent.getStringExtra("Detected_Step");
-            Log.d(TAG, String.valueOf(detectedStep));
+            countedStep = intent.getStringExtra("Counted_Step");
+            Log.d(TAG, String.valueOf(countedStep));
 
-            stepDetectTxV.setText('"' + String.valueOf(detectedStep) + '"' + " Steps Detected");
+            stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
         }
     };
 
@@ -110,10 +119,21 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         /** START THINGS FOR SERVICE **/
-        startService(new Intent(getBaseContext(), StepCountService.class));
+        //startService(new Intent(getBaseContext(), StepCountService.class));
+        if(isForeground){
+            startForegroundService(new Intent(getApplicationContext(), StepCountService.class));
+        }else{
+            startService(new Intent(getApplicationContext(), StepCountService.class));
+        }
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            MainActivity.this.startForegroundService(new Intent(MainActivity.this, StepCountService.class));
+        } else {
+            MainActivity.this.startService(new Intent(MainActivity.this, StepCountService.class));
+        }*/
         registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
         //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
-        stepDetectTxV = (TextView)findViewById(R.id.stepDetectTxV);
+        stepCounterTxV = (TextView)findViewById(R.id.stepDetectTxV);
         /** END THINGS FOR SERVICE **/
     }
 
@@ -159,6 +179,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void getForeground() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.FOREGROUND_SERVICE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.FOREGROUND_SERVICE},
+                    REQUEST_FOREGROUND_SERVICE_PERMISSION);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -168,6 +198,17 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getActivity();
+                }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            case REQUEST_FOREGROUND_SERVICE_PERMISSION:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getForeground();
                 }  else {
                     Toast.makeText(this,
                             R.string.permission_denied,
