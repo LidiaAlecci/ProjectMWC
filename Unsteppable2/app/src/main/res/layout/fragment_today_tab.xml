@@ -53,12 +53,13 @@
 
     <me.itangqi.waveloadingview.WaveLoadingView
         android:id="@+id/waveLoadingView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="100pt"
+        android:layout_height="100pt"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/linearLayout"
         app:layout_constraintStart_toStartOf="@+id/linearLayout"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.393"
         app:wlv_borderColor="@color/colorPrimaryDark"
         app:wlv_borderWidth="3dp"
         app:wlv_progressValue="40"
@@ -69,24 +70,38 @@
         app:wlv_titleCenterSize="50sp"
         app:wlv_titleCenterStrokeColor="@color/colorAccent"
         app:wlv_titleCenterStrokeWidth="3dp"
-        app:wlv_titleTop="@string/goal"
         app:wlv_titleTopColor="@color/colorPrimaryDark"
         app:wlv_triangle_direction="north"
         app:wlv_waveAmplitude="10"
-        app:wlv_waveColor="@color/colorPrimary"
 
+        app:wlv_waveColor="@color/colorPrimary"
         app:wlv_wave_background_Color="@android:color/transparent" />
 
     <TextView
-        android:id="@+id/goal"
+        android:id="@+id/steps_to_go"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/_0"
+        android:text="6000"
         android:textColor="@color/colorPrimaryDark"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/waveLoadingView" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.314" />
+
+    <TextView
+        android:id="@+id/steps_missing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center|center_horizontal"
+        android:text="Steps missing"
+        app:layout_constraintBottom_toTopOf="@+id/waveLoadingView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/steps_to_go"
+        app:layout_constraintVertical_bias="0.382" />
     <!--    <ProgressBar-->
 <!--        android:id="@+id/progressBar"-->
 <!--        style="?android:progressBarStyleHorizontal"-->
