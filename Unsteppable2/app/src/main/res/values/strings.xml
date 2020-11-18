@@ -28,6 +28,11 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    <string name="permission_denied">permission denied</string>
+    <string name="count_steps">Count Steps</string>
+    <string name="detect_steps">Detect Steps</string>
+    <string name="step_not_available">step detector not available</string>
+    <string name="counted_steps">Counted Steps</string>
 
     <string name="goal">Goal</string>
     <string name="_0">0</string>

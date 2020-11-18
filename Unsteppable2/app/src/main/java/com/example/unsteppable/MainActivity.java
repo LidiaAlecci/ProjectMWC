@@ -1,18 +1,30 @@
 package com.example.unsteppable;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -33,12 +45,66 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
+    // PERMISSION
+    private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
+    private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
+
+    private boolean runningQOrLater =
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
+
+    /** START THINGS FOR SERVICE **/
+    TextView stepCounterTxV; // TODO Debug
+    String countedStep;
+    private static final String TAG = "SENSOR_EVENT";
+    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
+
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // intent is holding data to display
+            countedStep = intent.getStringExtra("Counted_Step");
+            Log.d(TAG, String.valueOf(countedStep));
+
+            stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
+        }
+    };
+
+    private void createNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+
+            NotificationManager manager= getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+    public void startService(){
+        registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
+        //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
+        stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
+        startForegroundService(new Intent(getBaseContext(), StepCountService.class));
+    }
+
+    /** END THINGS FOR SERVICE **/
+
     private AppBarConfiguration mAppBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Log.d("TRY PERMISSION", "Before if");
+        // Ask for activity recognition permission
+        if (runningQOrLater) {
+            //Log.d("TRY PERMISSION", "trytry");
+            getActivity();
+        }
+        //Log.d("TRY PERMISSION", "After if");
 
         //Weather API part
         getWheatherFromApi();
@@ -76,6 +142,10 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        /** START THINGS FOR SERVICE **/
+        startService();
+        createNotificationChannel();
+        /** END THINGS FOR SERVICE **/
     }
 
     @Override
@@ -182,6 +252,70 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    /*** PERMISSION ***/
+
+    // Ask for permission
+    private void getActivity() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.ACTIVITY_RECOGNITION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.ACTIVITY_RECOGNITION},
+                    REQUEST_ACTIVITY_RECOGNITION_PERMISSION);
+        }
+    }
+    
+    private void getForeground() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.FOREGROUND_SERVICE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.FOREGROUND_SERVICE},
+                    REQUEST_FOREGROUND_SERVICE_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ACTIVITY_RECOGNITION_PERMISSION:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getActivity();
+                }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+            
+            case REQUEST_FOREGROUND_SERVICE_PERMISSION:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getForeground();
+                }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+                /*
+            case REQUEST_WRITE_EXTERNAL_STORAGE:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getWriteExternalStorage();
+                }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+
+
+             */
         }
     }
 }
