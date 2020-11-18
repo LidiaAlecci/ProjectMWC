@@ -1,5 +1,7 @@
 package com.example.unsteppable;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -9,9 +11,12 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
+import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 public class StepCountService extends Service implements SensorEventListener {
     SensorManager sensorManager;
@@ -35,6 +40,20 @@ public class StepCountService extends Service implements SensorEventListener {
         intent = new Intent(BROADCAST_ACTION);
     }
 
+    public void createNotification(int steps){
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Unsteppable is running")
+                .setContentText(steps + " steps done")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build();
+
+        startForeground(1,notification);
+    }
+
     /** Called by startService() */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -53,6 +72,9 @@ public class StepCountService extends Service implements SensorEventListener {
             //handler.post(new ToastRunnable(R.string.step_not_available));
         }
         serviceStopped = false;
+
+        createNotification(0);
+
         return START_STICKY;
     }
 
@@ -76,6 +98,7 @@ public class StepCountService extends Service implements SensorEventListener {
                 //androidStepCounter += (int) event.values[0];
                 androidStepCounter = countSteps - oldSteps;
                 Log.v(TAG, "Num.steps: " + String.valueOf(androidStepCounter));
+                createNotification(androidStepCounter);
         }
     }
 

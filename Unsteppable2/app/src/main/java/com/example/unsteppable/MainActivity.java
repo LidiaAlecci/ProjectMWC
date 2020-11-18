@@ -1,11 +1,14 @@
 package com.example.unsteppable;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -33,16 +36,16 @@ public class MainActivity extends AppCompatActivity {
 
     // PERMISSION
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
+    private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
+
     private boolean runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
 
     /** START THINGS FOR SERVICE **/
-    //TextView stepCountTxV; // TODO Debug
     TextView stepCounterTxV; // TODO Debug
-    //String countedStep;
     String countedStep;
-    //private Intent intent;
     private static final String TAG = "SENSOR_EVENT";
+    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -54,6 +57,26 @@ public class MainActivity extends AppCompatActivity {
             stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
         }
     };
+
+    private void createNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+
+            NotificationManager manager= getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+    public void startService(){
+        registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
+        //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
+        stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
+        startForegroundService(new Intent(getBaseContext(), StepCountService.class));
+    }
 
     /** END THINGS FOR SERVICE **/
 
@@ -106,10 +129,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         /** START THINGS FOR SERVICE **/
-        startService(new Intent(getBaseContext(), StepCountService.class));
-        registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
-        //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
-        stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
+        startService();
+        createNotificationChannel();
         /** END THINGS FOR SERVICE **/
     }
 
@@ -154,6 +175,16 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_ACTIVITY_RECOGNITION_PERMISSION);
         }
     }
+    
+    private void getForeground() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.FOREGROUND_SERVICE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.FOREGROUND_SERVICE},
+                    REQUEST_FOREGROUND_SERVICE_PERMISSION);
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -169,17 +200,18 @@ public class MainActivity extends AppCompatActivity {
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
-            /*
-            case REQUEST_READ_EXTERNAL_STORAGE:
+            
+            case REQUEST_FOREGROUND_SERVICE_PERMISSION:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getReadExternalStorage();
+                    getForeground();
                 }  else {
                     Toast.makeText(this,
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
+                /*
             case REQUEST_WRITE_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
