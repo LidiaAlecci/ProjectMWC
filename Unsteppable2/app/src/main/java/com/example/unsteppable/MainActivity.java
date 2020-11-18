@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
             countedStep = intent.getStringExtra("Counted_Step");
-            Log.d(TAG, String.valueOf(countedStep));
+            //Log.d(TAG, String.valueOf(countedStep));
 
-            stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
+            //stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
         }
     };
 
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     public void startService(){
         registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
         //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
-        stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
+        //stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
         startForegroundService(new Intent(getBaseContext(), StepCountService.class));
     }
 

@@ -140,7 +140,7 @@ public class StepCountService extends Service implements SensorEventListener {
 
     /** Add data to the intent and send broadcast */
     private void broadcastSensorValue() {
-        Log.v(TAG, "Data to Activity");
+        //Log.v(TAG, "Data to Activity");
         // add data to intent
         intent.putExtra("Counted_Step_Int", androidStepCounter);
         intent.putExtra("Counted_Step", String.valueOf(androidStepCounter));

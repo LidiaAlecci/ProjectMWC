@@ -19,7 +19,7 @@
         app:navGraph="@navigation/mobile_navigation" />
 
 
-
+    <!--
     <TextView
         android:id="@+id/stepCountTxV"
         android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#3A2DEF"
         tools:layout_editor_absoluteX="145dp"
-        tools:layout_editor_absoluteY="145dp" />
+        tools:layout_editor_absoluteY="145dp" /> -->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
