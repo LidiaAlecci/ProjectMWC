@@ -11,10 +11,8 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
-import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import android.widget.Toast;
-
+import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 

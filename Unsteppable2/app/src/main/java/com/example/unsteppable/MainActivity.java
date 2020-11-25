@@ -1,23 +1,17 @@
 package com.example.unsteppable;
 
 import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.unsteppable.ui.main.BackgroundServiceHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -47,53 +41,13 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    // PERMISSION
+    private BackgroundServiceHelper backgroundService;
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
     private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
-
+    private AppBarConfiguration mAppBarConfiguration;
+    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
     private boolean runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
-
-    /** START THINGS FOR SERVICE **/
-    TextView stepCounterTxV; // TODO Debug
-    String countedStep;
-    private static final String TAG = "SENSOR_EVENT";
-    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
-
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // intent is holding data to display
-            countedStep = intent.getStringExtra("Counted_Steps");
-            //Log.d(TAG, String.valueOf(countedStep));
-
-            //stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
-        }
-    };
-
-    private void createNotificationChannel(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-
-            NotificationManager manager= getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
-        }
-    }
-
-    public void startService(){
-        registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
-        //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
-        //stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
-        startForegroundService(new Intent(getBaseContext(), StepCountService.class));
-    }
-
-    /** END THINGS FOR SERVICE **/
-
-    private AppBarConfiguration mAppBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,10 +60,11 @@ public class MainActivity extends AppCompatActivity {
             //Log.d("TRY PERMISSION", "trytry");
             getActivity();
         }
+        backgroundService = BackgroundServiceHelper.getInstance();
         //Log.d("TRY PERMISSION", "After if");
 
         //Weather API part
-        getWheatherFromApi();
+        String weather = getWeatherFromApi();
 
         //TAB
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -144,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         /** START THINGS FOR SERVICE **/
-        startService();
-        createNotificationChannel();
+        backgroundService.startService(this, this.getBaseContext());
+        backgroundService.createNotificationChannel(this);
         /** END THINGS FOR SERVICE **/
     }
 
@@ -180,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     //Wheather API part
     class Weather extends AsyncTask<String, Void, String> {
 
@@ -202,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 int data = isr.read();
                 String content = "";
                 char ch;
-                while(data != -1){
+                while (data != -1) {
                     ch = (char) data;
                     content += ch;
                     data = isr.read();
@@ -218,11 +174,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected void getWheatherFromApi(){
+    protected String getWeatherFromApi() {
         String content;
         String city = "Lugano";
         String apiKey = "e9fcc5721ca04b00b71bebed9a78bae3";
-        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q="+city+"&appid="+apiKey;
+        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey;
 
         Weather weather = new Weather();
         try {
@@ -242,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             String main = "";
             String description = "";
 
-            for(int i = 0; i < array.length(); i++){
+            for (int i = 0; i < array.length(); i++) {
                 JSONObject weatherPart = array.getJSONObject(i);
                 main = weatherPart.getString("main");
                 description = weatherPart.getString("description");
@@ -250,12 +206,16 @@ public class MainActivity extends AppCompatActivity {
 
             Log.i("main", main);
             Log.i("descritpion", description);
+            return main;
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
+
+
     /*** PERMISSION ***/
 
     // Ask for permission
@@ -268,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_ACTIVITY_RECOGNITION_PERMISSION);
         }
     }
-    
+
     private void getForeground() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.FOREGROUND_SERVICE)
@@ -293,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
-            
+
             case REQUEST_FOREGROUND_SERVICE_PERMISSION:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
