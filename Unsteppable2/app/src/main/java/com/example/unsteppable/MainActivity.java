@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         //NAVIGATION
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.getMenu().findItem(R.id.weather).setIcon(R.drawable.ic_cloud);
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
