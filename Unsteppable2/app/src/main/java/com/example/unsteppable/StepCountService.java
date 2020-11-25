@@ -24,6 +24,7 @@ public class StepCountService extends Service implements SensorEventListener {
     Sensor sensorStepCounter;
     private static final String TAG = "STEP_SERVICE";
     private final Handler handler = new Handler();
+    private Notification notification = null;
     // Android step counter
     public int androidStepCounter = 0;
     public int oldSteps = 0;
@@ -44,7 +45,7 @@ public class StepCountService extends Service implements SensorEventListener {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Unsteppable is running")
                 .setContentText(steps + " steps done")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -72,8 +73,10 @@ public class StepCountService extends Service implements SensorEventListener {
             //handler.post(new ToastRunnable(R.string.step_not_available));
         }
         serviceStopped = false;
+        if(notification == null){
+            createNotification(0);
+        }
 
-        createNotification(0);
 
         return START_STICKY;
     }
@@ -142,8 +145,9 @@ public class StepCountService extends Service implements SensorEventListener {
     private void broadcastSensorValue() {
         //Log.v(TAG, "Data to Activity");
         // add data to intent
-        intent.putExtra("Counted_Step_Int", androidStepCounter);
-        intent.putExtra("Counted_Step", String.valueOf(androidStepCounter));
+        intent.putExtra("Counted_Steps_Int", androidStepCounter);
+        intent.putExtra("Counted_Steps", String.valueOf(androidStepCounter));
+        //intent.putExtra("Goal_Steps_Int", );
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
     }

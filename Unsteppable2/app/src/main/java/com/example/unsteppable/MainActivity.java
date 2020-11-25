@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
-            countedStep = intent.getStringExtra("Counted_Step");
+            countedStep = intent.getStringExtra("Counted_Steps");
             //Log.d(TAG, String.valueOf(countedStep));
 
             //stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");

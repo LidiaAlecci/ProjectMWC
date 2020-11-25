@@ -30,14 +30,16 @@ public class TodayTabFragment extends Fragment {
     /* BROADCAST STUFF */
 
     private int countedStep;
+    private int goalSteps;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
-            countedStep = intent.getIntExtra("Counted_Step_Int", 0);//intent.getStringExtra("Counted_Step");
+            countedStep = intent.getIntExtra("Counted_Steps_Int", 0);//intent.getStringExtra("Counted_Step");
+            goalSteps = intent.getIntExtra("Goal_Steps_Int", 6000);
             //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
-            mWaveLoad.setProgressValue(countedStep);
+            mWaveLoad.setProgressValue(countedStep/goalSteps);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
             //Log.d("BROADCAST in TodayTabFragment: getProgressValue", String.valueOf(mWaveLoad.getProgressValue()));
         }
