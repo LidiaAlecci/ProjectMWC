@@ -17,6 +17,10 @@ import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
 import com.example.unsteppable.StepCountService;
+import com.example.unsteppable.UnsteppableOpenHelper;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
 
@@ -30,7 +34,7 @@ public class TodayTabFragment extends Fragment {
     /* BROADCAST STUFF */
 
     private int countedStep;
-    private int goalSteps;
+    private int goalSteps = 6000;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -63,8 +67,14 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad.setAnimDuration(5000);
         // BROADCAST
         this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION)); // BROADCAST
-        return root;
 
+        // Get the number of steps stored in the current date
+        Date cDate = new Date();
+        String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
+        countedStep = UnsteppableOpenHelper.loadSingleRecord(getContext(), fDate);
+        mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+        mWaveLoad.setCenterTitle(String.valueOf(countedStep));
+        return root;
 
     }
 

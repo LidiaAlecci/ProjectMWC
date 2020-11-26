@@ -3,18 +3,25 @@ package com.example.unsteppable;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class StepCountService extends Service implements SensorEventListener {
     SensorManager sensorManager;
@@ -28,6 +35,13 @@ public class StepCountService extends Service implements SensorEventListener {
     public int oldSteps = 0;
     boolean serviceStopped; // Boolean variable to control if the service is stopped
 
+    // SQLite Database
+    SQLiteDatabase database;
+
+    public String timestamp;
+    public String day;
+    public String hour;
+
 
     Intent intent;
     public static final String BROADCAST_ACTION = "com.example.unsteppable.mybroadcast";
@@ -38,6 +52,12 @@ public class StepCountService extends Service implements SensorEventListener {
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
     }
+    // TODO
+    /*
+    public void setDatabase(SQLiteDatabase db){
+        database = db;
+    }*/
+
 
     public void createNotification(int steps){
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -75,6 +95,9 @@ public class StepCountService extends Service implements SensorEventListener {
             createNotification(0);
         }
 
+        // Get an instance of the database
+        UnsteppableOpenHelper databaseOpenHelper = new UnsteppableOpenHelper(getApplicationContext());
+        database = databaseOpenHelper.getWritableDatabase();
 
         return START_STICKY;
     }
@@ -99,8 +122,29 @@ public class StepCountService extends Service implements SensorEventListener {
                 //androidStepCounter += (int) event.values[0];
                 androidStepCounter = countSteps - oldSteps;
                 Log.v(TAG, "Num.steps: " + String.valueOf(androidStepCounter));
+                // Timestamp
+                long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
+                updateTimeStamp(timeInMillis);
+                // Insert the data in the database
+                ContentValues values = new ContentValues();
+                values.put(UnsteppableOpenHelper.KEY_TIMESTAMP, timestamp);
+                values.put(UnsteppableOpenHelper.KEY_DAY, day);
+                values.put(UnsteppableOpenHelper.KEY_HOUR, hour);
+                long id = database.insert(UnsteppableOpenHelper.TABLE_NAME, null, values);
+                Log.v("DATABASE TRY", "LONG " + id);
                 createNotification(androidStepCounter);
         }
+    }
+
+    private void updateTimeStamp(long timeInMillis){
+        // Convert the timestamp to date
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        jdf.setTimeZone(TimeZone.getTimeZone("GMT+2"));
+        String date = jdf.format(timeInMillis);
+        // Get the date, the day and the hour
+        timestamp = date;
+        day = date.substring(0,10);
+        hour = date.substring(11,13);
     }
 
     // Required method
@@ -116,7 +160,7 @@ public class StepCountService extends Service implements SensorEventListener {
 
         serviceStopped = true;
     }
-    /** ToastRunnable in order to make toast message*/
+    /** ToastRunnable in order to make toast message */
     private class ToastRunnable implements Runnable {
         int idText;
         public ToastRunnable(int idText) {
@@ -128,7 +172,7 @@ public class StepCountService extends Service implements SensorEventListener {
         }
     }
 
-    // updateBroadcastData
+    // updateBroadcastData in order to choose the delay and not update every time
     private Runnable updateBroadcastData = new Runnable() {
         public void run() {
             if (!serviceStopped) { // If service is still running keep it updated
@@ -149,4 +193,17 @@ public class StepCountService extends Service implements SensorEventListener {
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
     }
+
+    // updateDatabase in order to update the Database every hour
+    private Runnable updateDatabase = new Runnable() {
+        public void run() {
+            if (!serviceStopped) { // If service is still running keep it updated
+                //TODO
+                // Update second database
+
+                // After the delay this Runnable will be executed again
+                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(60));
+            }
+        }
+    };
 }
