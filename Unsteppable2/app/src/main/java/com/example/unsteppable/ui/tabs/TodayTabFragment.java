@@ -39,7 +39,7 @@ public class TodayTabFragment extends Fragment {
             countedStep = intent.getIntExtra("Counted_Steps_Int", 0);//intent.getStringExtra("Counted_Step");
             goalSteps = intent.getIntExtra("Goal_Steps_Int", 6000);
             //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
-            mWaveLoad.setProgressValue(countedStep/goalSteps);
+            mWaveLoad.setProgressValue(countedStep*100/goalSteps);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
             //Log.d("BROADCAST in TodayTabFragment: getProgressValue", String.valueOf(mWaveLoad.getProgressValue()));
         }
