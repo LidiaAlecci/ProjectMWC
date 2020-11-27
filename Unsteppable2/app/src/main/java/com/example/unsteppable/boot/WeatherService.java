@@ -1,7 +1,6 @@
-package com.example.unsteppable;
+package com.example.unsteppable.boot;
 
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -15,7 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 //Wheather API part
-public class Weather extends AsyncTask<String, Void, String> {
+public class WeatherService extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... address) {
@@ -51,13 +50,13 @@ public class Weather extends AsyncTask<String, Void, String> {
         return null;
     }
 
-    public String getWeatherFromApi() {
+    public static WeatherStatus getWeatherFromApi() {
         String content;
         String city = "Lugano";
         String apiKey = "e9fcc5721ca04b00b71bebed9a78bae3";
         String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey;
 
-        Weather weather = new Weather();
+        WeatherService weather = new WeatherService();
         try {
             //content = weather.execute("https://api.openweathermap.org/data/2.5/weather?q=Lugano&appid=e9fcc5721ca04b00b71bebed9a78bae3").get();
             content = weather.execute(apiUrl).get();
@@ -83,12 +82,16 @@ public class Weather extends AsyncTask<String, Void, String> {
 
             Log.i("main", main);
             Log.i("descritpion", description);
-            return main;
+            return getWeather(main);
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static WeatherStatus getWeather(String weather){
+       return WeatherStatus.valueOf(weather.toUpperCase());
     }
 }

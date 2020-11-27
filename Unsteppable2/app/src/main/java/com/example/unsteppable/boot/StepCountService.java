@@ -1,4 +1,4 @@
-package com.example.unsteppable;
+package com.example.unsteppable.boot;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -15,6 +15,9 @@ import android.widget.Toast;
 import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
+import com.example.unsteppable.MainActivity;
+import com.example.unsteppable.R;
 
 public class StepCountService extends Service implements SensorEventListener {
     SensorManager sensorManager;

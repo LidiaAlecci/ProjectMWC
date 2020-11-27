@@ -1,4 +1,4 @@
-package com.example.unsteppable.ui.main;
+package com.example.unsteppable.boot;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.widget.TextView;
-
-import com.example.unsteppable.StepCountService;
 
 public class BackgroundServiceHelper {
 
