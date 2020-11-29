@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private BackgroundServiceHelper backgroundService;
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
     private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
+    private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private AppBarConfiguration mAppBarConfiguration;
     public static final String CHANNEL_ID = "ServiceStepCounterChannel";
     private boolean runningQOrLater =
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         //Log.d("TRY PERMISSION", "After if");
 
         //Weather API part
+        getLocation();
         //String weather = getWeatherFromApi();
 
         //TAB
@@ -124,7 +126,38 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //LOCATION PART
+    @SuppressLint("MissingPermission")
+    private void getCurrentLocation() {
+        final LocationRequest locationRequest = new LocationRequest();
+        double latitude, longitude;
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(3000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+
+
+        LocationServices.getFusedLocationProviderClient(MainActivity.this)
+                .requestLocationUpdates(locationRequest, new LocationCallback() {
+
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        super.onLocationResult(locationResult);
+                        LocationServices.getFusedLocationProviderClient(MainActivity.this)
+                                .removeLocationUpdates(this);
+                        if (locationResult != null && locationResult.getLocations().size() > 0) {
+                            int latestLocationIndex = locationResult.getLocations().size() - 1;
+                            latitude =
+                                    locationResult.getLocations().get(latestLocationIndex).getLatitude();
+                            longitude =
+                                    locationResult.getLocations().get(latestLocationIndex).getLongitude();
+
+                        }
+                    }
+                }, Looper.getMainLooper());
+
+        //WheaterService.getWeatherFromApi(latitude, longitude);
+    }
 
 
     /*** PERMISSION ***/
@@ -150,6 +183,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void getLocation(){
+        if (ContextCompat.checkSelfPermission(
+                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_CODE_LOCATION_PERMISSION
+            );
+
+        } else {
+            //getCurrentLocation();
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -171,6 +219,16 @@ public class MainActivity extends AppCompatActivity {
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getForeground();
                 }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            case REQUEST_CODE_LOCATION_PERMISSION:
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getLocation();
+                } else {
                     Toast.makeText(this,
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();

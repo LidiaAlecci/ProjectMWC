@@ -50,11 +50,13 @@ public class WeatherService extends AsyncTask<String, Void, String> {
         return null;
     }
 
-    public static WeatherStatus getWeatherFromApi() {
+    public static WeatherStatus getWeatherFromApi(double latitude, double longitude) {
         String content;
-        String city = "Lugano";
+        //String city = "Lugano";
+
         String apiKey = "e9fcc5721ca04b00b71bebed9a78bae3";
-        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey;
+        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?lat="+latitude+"&lon="+longitude+"&appid="+apiKey;
+        //String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey;
 
         WeatherService weather = new WeatherService();
         try {
