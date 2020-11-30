@@ -10,9 +10,6 @@ import android.os.Build;
 import android.widget.TextView;
 
 public class BackgroundServiceHelper {
-
-    /** START THINGS FOR SERVICE **/
-    TextView stepCounterTxV; // TODO Debug
     String countedStep;
     private static final String TAG = "SENSOR_EVENT";
     public static final String CHANNEL_ID = "ServiceStepCounterChannel";
@@ -60,6 +57,4 @@ public class BackgroundServiceHelper {
         context.startForegroundService(new Intent(baseContext, StepCountService.class));
     }
 
-
-    /** END THINGS FOR SERVICE **/
 }

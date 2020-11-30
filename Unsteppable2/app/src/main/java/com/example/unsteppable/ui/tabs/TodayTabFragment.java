@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,10 @@ import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
 import com.example.unsteppable.boot.StepCountService;
+import com.example.unsteppable.db.UnsteppableOpenHelper;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
 
@@ -28,7 +33,7 @@ public class TodayTabFragment extends Fragment {
     /* BROADCAST STUFF */
 
     private int countedStep;
-    private int goalSteps;
+    private int goalSteps = 6000;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -61,10 +66,20 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad.setAnimDuration(5000);
         // BROADCAST
         this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION)); // BROADCAST
+
+        // Get the number of steps stored in the current date
+        Date cDate = new Date();
+        String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
+        countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
+        Log.d("STORED STEPS TODAY", "countedStep " + String.valueOf(countedStep));
+        mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+        mWaveLoad.setCenterTitle(String.valueOf(countedStep));
+        Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
+
+
+
         return root;
 
-
     }
-
 
 }

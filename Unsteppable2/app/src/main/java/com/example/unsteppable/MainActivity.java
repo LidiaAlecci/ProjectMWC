@@ -4,8 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.MenuItem;
@@ -13,11 +11,12 @@ import android.view.View;
 import android.view.Menu;
 import android.widget.Toast;
 
+
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
 import com.example.unsteppable.boot.BackgroundServiceHelper;
 import com.example.unsteppable.boot.WeatherService;
 import com.example.unsteppable.boot.WeatherStatus;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,7 +29,6 @@ import com.google.android.material.tabs.TabLayout;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -45,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
     private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 46;
+    private static final int REQUEST_READ_EXTERNAL_STORAGE = 47;
     private AppBarConfiguration mAppBarConfiguration;
     public static final String CHANNEL_ID = "ServiceStepCounterChannel";
     private boolean runningQOrLater =
@@ -54,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        getWriteExternalStorage();
+        getReadExternalStorage();
 
         //Log.d("TRY PERMISSION", "Before if");
         // Ask for activity recognition permission
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
         /** END THINGS FOR SERVICE **/
+
     }
 
 
@@ -212,6 +216,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void getWriteExternalStorage() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
+    // Ask for read external storage permission
+    private void getReadExternalStorage() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_READ_EXTERNAL_STORAGE);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -259,8 +284,18 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                 }
 
+            case REQUEST_READ_EXTERNAL_STORAGE:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getReadExternalStorage();
+                }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+                */
 
-             */
         }
     }
 }
