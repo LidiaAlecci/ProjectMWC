@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
@@ -17,7 +16,7 @@ import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
 import com.example.unsteppable.StepCountService;
-import com.example.unsteppable.UnsteppableOpenHelper;
+import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -71,12 +70,16 @@ public class TodayTabFragment extends Fragment {
         // Get the number of steps stored in the current date
         Date cDate = new Date();
         String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
-        countedStep = UnsteppableOpenHelper.loadSingleRecord(getContext(), fDate);
+        countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
+        Log.d("STORED STEPS TODAY", "countedStep " + String.valueOf(countedStep));
         mWaveLoad.setProgressValue(countedStep*100/goalSteps);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
+        Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
+
+
+
         return root;
 
     }
-
 
 }

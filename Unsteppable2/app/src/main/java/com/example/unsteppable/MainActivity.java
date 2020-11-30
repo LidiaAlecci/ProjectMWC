@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
         /** END THINGS FOR SERVICE **/
+
     }
 
 

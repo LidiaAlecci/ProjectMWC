@@ -1,4 +1,4 @@
-package com.example.unsteppable;
+package com.example.unsteppable.db;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class UnsteppableOpenHelper extends SQLiteOpenHelper {
+public class UnsteppableDayOpenHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "unsteppable";
 
@@ -29,14 +29,16 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
             + KEY_TIMESTAMP + " TEXT);";
 
     // Constructor
-    public UnsteppableOpenHelper(Context context) {
+    public UnsteppableDayOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     // onCreate
     @Override
     public void onCreate(SQLiteDatabase db) {
+
         db.execSQL(CREATE_TABLE_SQL);
+        Log.v("DATABASE", "created days table");
     }
 
     @Override
@@ -48,15 +50,15 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
      * Utility function to load all records in the database
      *
      * @param context: application context
-     */
+
     public static void loadRecords(Context context) {
         List<String> dates = new LinkedList<String>();
-        UnsteppableOpenHelper databaseHelper = new UnsteppableOpenHelper(context);
+        UnsteppableDayOpenHelper databaseHelper = new UnsteppableDayOpenHelper(context);
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
 
-        String [] columns = new String [] {UnsteppableOpenHelper.KEY_TIMESTAMP};
-        Cursor cursor = database.query(UnsteppableOpenHelper.TABLE_NAME, columns,
-                null, null, UnsteppableOpenHelper.KEY_TIMESTAMP,
+        String [] columns = new String [] {UnsteppableDayOpenHelper.KEY_TIMESTAMP};
+        Cursor cursor = database.query(UnsteppableDayOpenHelper.TABLE_NAME, columns,
+                null, null, UnsteppableDayOpenHelper.KEY_TIMESTAMP,
                 null, null );
 
         // iterate over returned elements
@@ -69,24 +71,24 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
 
         Log.d("STORED TIMESTAMPS: ", String.valueOf(dates));
 
-    }
+    }*/
 
     /**
      * Utility function to delete all records from the data base
      *
      * @param context: application context
-     */
+
     public static void deleteRecords(Context context){
-        UnsteppableOpenHelper databaseHelper = new UnsteppableOpenHelper(context);
+        UnsteppableDayOpenHelper databaseHelper = new UnsteppableDayOpenHelper(context);
         SQLiteDatabase database = databaseHelper.getWritableDatabase();
         int numberDeletedRecords =0;
 
-        numberDeletedRecords = database.delete(UnsteppableOpenHelper.TABLE_NAME, null, null);
+        numberDeletedRecords = database.delete(UnsteppableDayOpenHelper.TABLE_NAME, null, null);
         database.close();
 
         // display the number of deleted records with a Toast message
-        Toast.makeText(context,"Deleted " + String.valueOf(numberDeletedRecords) + " steps",Toast.LENGTH_LONG).show();
-    }
+        Toast.makeText(context,"Deleted " + String.valueOf(numberDeletedRecords) + " records",Toast.LENGTH_LONG).show();
+    }*/
 
     /**
      * Utility function to load records from a single day
@@ -99,13 +101,13 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
     public static Integer loadSingleRecord(Context context, String date){
         List<String> steps = new LinkedList<String>();
         // Get the readable database
-        UnsteppableOpenHelper databaseHelper = new UnsteppableOpenHelper(context);
+        UnsteppableDayOpenHelper databaseHelper = new UnsteppableDayOpenHelper(context);
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
 
-        String where = UnsteppableOpenHelper.KEY_DAY + " = ?";
+        String where = UnsteppableDayOpenHelper.KEY_DAY + " = ?";
         String [] whereArgs = { date };
 
-        Cursor cursor = database.query(UnsteppableOpenHelper.TABLE_NAME, null, where, whereArgs, null,
+        Cursor cursor = database.query(UnsteppableDayOpenHelper.TABLE_NAME, null, where, whereArgs, null,
                 null, null );
 
         // iterate over returned elements
@@ -134,7 +136,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         Map<Integer, Integer>  map = new HashMap<>();
 
         // 2. Get the readable database
-        UnsteppableOpenHelper databaseHelper = new UnsteppableOpenHelper(context);
+        UnsteppableDayOpenHelper databaseHelper = new UnsteppableDayOpenHelper(context);
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
 
         // 3. Define the query to get the data
@@ -174,7 +176,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         Map<String, Integer>  map = new TreeMap<>();
 
         // 2. Get the readable database
-        UnsteppableOpenHelper databaseHelper = new UnsteppableOpenHelper(context);
+        UnsteppableDayOpenHelper databaseHelper = new UnsteppableDayOpenHelper(context);
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
 
         // 3. Define the query to get the data
