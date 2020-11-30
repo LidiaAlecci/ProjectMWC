@@ -82,8 +82,8 @@ public class WeatherService extends AsyncTask<String, Void, String> {
                 description = weatherPart.getString("description");
             }
 
-            Log.i("main", main);
-            Log.i("descritpion", description);
+            Log.d("main", main);
+            Log.d("description", description);
             return getWeather(main);
 
 

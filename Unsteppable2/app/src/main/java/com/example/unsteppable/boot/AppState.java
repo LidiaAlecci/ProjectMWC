@@ -1,6 +1,11 @@
 package com.example.unsteppable.boot;
 
-public class AppState {
+import android.content.SharedPreferences;
+
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModel;
+
+public class AppState extends ViewModel {
     private static int currentGoal;
     private static int defaultGoal;
     private static WeatherStatus weather;
@@ -9,7 +14,7 @@ public class AppState {
     private AppState(){
         //defaultGoal = db.getLastDefaultGoal();
         defaultGoal = 6000;
-        weather = WeatherService.getWeatherFromApi();
+        //weather = WeatherService.getWeatherFromApi();
     }
 
     public AppState getInstance() {

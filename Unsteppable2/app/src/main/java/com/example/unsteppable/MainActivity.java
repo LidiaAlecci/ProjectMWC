@@ -1,15 +1,25 @@
 package com.example.unsteppable;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.widget.Toast;
 
 import com.example.unsteppable.boot.BackgroundServiceHelper;
+import com.example.unsteppable.boot.WeatherService;
+import com.example.unsteppable.boot.WeatherStatus;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -19,6 +29,8 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -53,9 +65,8 @@ public class MainActivity extends AppCompatActivity {
         //Log.d("TRY PERMISSION", "After if");
 
         //Weather API part
-        getLocation();
+//        getLocation();
         //String weather = getWeatherFromApi();
-
         //TAB
         Toolbar toolbar = findViewById(R.id.toolbar);
         TabLayout tabLayout = findViewById(R.id.tabs);
@@ -75,7 +86,9 @@ public class MainActivity extends AppCompatActivity {
         //NAVIGATION
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.getMenu().findItem(R.id.weather).setIcon(R.drawable.ic_cloud);
+        WeatherStatus weather = getCurrentLocation();
+        navigationView.getMenu().findItem(R.id.weather).setIcon(weather.getIcon());
+        navigationView.getMenu().findItem(R.id.weather).setTitle(weather.getName());
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -128,9 +141,10 @@ public class MainActivity extends AppCompatActivity {
 
     //LOCATION PART
     @SuppressLint("MissingPermission")
-    private void getCurrentLocation() {
+    private WeatherStatus getCurrentLocation() {
         final LocationRequest locationRequest = new LocationRequest();
-        double latitude, longitude;
+        final double[] latitude = new double[1];
+        final double[] longitude = new double[1];
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -147,16 +161,16 @@ public class MainActivity extends AppCompatActivity {
                                 .removeLocationUpdates(this);
                         if (locationResult != null && locationResult.getLocations().size() > 0) {
                             int latestLocationIndex = locationResult.getLocations().size() - 1;
-                            latitude =
+                            latitude[0] =
                                     locationResult.getLocations().get(latestLocationIndex).getLatitude();
-                            longitude =
+                            longitude[0] =
                                     locationResult.getLocations().get(latestLocationIndex).getLongitude();
 
                         }
                     }
                 }, Looper.getMainLooper());
 
-        //WheaterService.getWeatherFromApi(latitude, longitude);
+        return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
     }
 
 
@@ -194,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
             );
 
         } else {
-            //getCurrentLocation();
+            getCurrentLocation();
         }
     }
 
@@ -227,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CODE_LOCATION_PERMISSION:
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getLocation();
+//                    getLocation();
                 } else {
                     Toast.makeText(this,
                             R.string.permission_denied,

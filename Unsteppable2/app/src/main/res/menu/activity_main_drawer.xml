@@ -17,7 +17,7 @@
         <item
             android:id="@+id/weather"
             android:title="Weather"
-            android:icon="@drawable/ic_sun"/>
+            android:icon="@drawable/ic_sunny"/>
     </group>
 
 
