@@ -1,15 +1,23 @@
 package com.example.unsteppable;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.widget.Toast;
 
+
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
 import com.example.unsteppable.boot.BackgroundServiceHelper;
+import com.example.unsteppable.R;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -19,6 +27,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -136,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     private void getCurrentLocation() {
         final LocationRequest locationRequest = new LocationRequest();
-        double latitude, longitude;
+        final double[] latitude = new double[1];
+        final double[] longitude = new double[1];
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -153,9 +163,9 @@ public class MainActivity extends AppCompatActivity {
                                 .removeLocationUpdates(this);
                         if (locationResult != null && locationResult.getLocations().size() > 0) {
                             int latestLocationIndex = locationResult.getLocations().size() - 1;
-                            latitude =
+                            latitude[0] =
                                     locationResult.getLocations().get(latestLocationIndex).getLatitude();
-                            longitude =
+                            longitude[0] =
                                     locationResult.getLocations().get(latestLocationIndex).getLongitude();
 
                         }
@@ -282,6 +292,8 @@ public class MainActivity extends AppCompatActivity {
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
+                */
+
         }
     }
 }

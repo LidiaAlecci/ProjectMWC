@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
 import com.example.unsteppable.boot.StepCountService;
+import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
