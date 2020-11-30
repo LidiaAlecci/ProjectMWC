@@ -74,17 +74,17 @@ public class StepCountService extends Service implements SensorEventListener {
         registerAlarmBroadcast();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
         // get, if any, the steps already register in the db
-        androidStepCounter = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDayAndDate()[0]);
+        androidStepCounter = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDay());
     }
 
     // utility to have current day and the timestamp in the right format
-    private String[] getCurrentDayAndDate(){
+    private String getCurrentDay(){
         SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
         jdf.setTimeZone(TimeZone.getTimeZone("GMT+1"));
         String currentDate = jdf.format(System.currentTimeMillis());
         // Get the date, the day and the hour
         String currentDay = currentDate.substring(0,10);
-        return new String[]{currentDay, currentDate};
+        return currentDay;
     }
 
     private void registerAlarmBroadcast() {
@@ -93,44 +93,11 @@ public class StepCountService extends Service implements SensorEventListener {
         //This will be call when alarm time will reached.
         broadcastAlarmReceiver = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) { //TODO is really written badly
+            public void onReceive(Context context, Intent intent) {
                 Log.i(TAG,"BroadcastReceiver::OnReceive()");
                 // Insert the data in the database
-                String lastDayInTab2 = UnsteppableOpenHelper.getLastDayFromTab2(getBaseContext());
-                Log.d("DATABASE", "value of lastDayInTab2: " + null);
-                if(day == null){
-                    updateTimeStamp(System.currentTimeMillis());
-                }
-                ContentValues values = new ContentValues();
-                values.put(UnsteppableOpenHelper.KEY_TIMESTAMP, timestamp);
-                values.put(UnsteppableOpenHelper.KEY_DAY, day);
-                values.put(UnsteppableOpenHelper.KEY_BASE_GOAL , baseGoal);
-                values.put(UnsteppableOpenHelper.KEY_ACTUAL_GOAL , actualGoal);
-                androidStepCounter = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),day);
-                values.put(UnsteppableOpenHelper.KEY_STEPS, androidStepCounter);
-                if(lastDayInTab2 != null){
-                    if(!day.equals(lastDayInTab2)){
-                        long id = database.insert(UnsteppableOpenHelper.TABLE_NAME2, null, values);
-                        Log.v("DATABASE TABLE2", "Insert row - LONG " + id);
-                    }else{
-                        long id = database.update(UnsteppableOpenHelper.TABLE_NAME2, values, "day = ?", new String[]{day});
-                        Log.v("DATABASE TABLE2", "Update row - LONG " + id);
-                    }
-                }
-                String[] currentDayAndDate = getCurrentDayAndDate();
-                String currentDay = currentDayAndDate[0];
-                if(!currentDay.equals(day) || lastDayInTab2 == null){
-                    values.clear();
-                    values.put(UnsteppableOpenHelper.KEY_TIMESTAMP, currentDayAndDate[1]);
-                    values.put(UnsteppableOpenHelper.KEY_DAY, currentDayAndDate[0]);
-                    values.put(UnsteppableOpenHelper.KEY_BASE_GOAL , baseGoal);
-                    values.put(UnsteppableOpenHelper.KEY_ACTUAL_GOAL , actualGoal);
-                    values.put(UnsteppableOpenHelper.KEY_STEPS, 0);
-                    long id = database.insert(UnsteppableOpenHelper.TABLE_NAME2, null, values);
-                    //androidStepCounter = 0;
-                    Log.v("DATABASE TABLE2", "Insert empty row - LONG " + id);
-                }
-                if(!currentDay.equals(day)){
+                UnsteppableOpenHelper.insertDayReport(context,timestamp, day, baseGoal, actualGoal);
+                if(!getCurrentDay().equals(day)){
                     restart();
                 }
             }
@@ -228,14 +195,7 @@ public class StepCountService extends Service implements SensorEventListener {
                     long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
                     updateTimeStamp(timeInMillis);
                     // Insert the data in the database
-                    ContentValues values = new ContentValues();
-                    values.put(UnsteppableOpenHelper.KEY_TIMESTAMP, timestamp);
-                    values.put(UnsteppableOpenHelper.KEY_DAY, day);
-                    values.put(UnsteppableOpenHelper.KEY_HOUR, hour);
-                    long id = database.insert(UnsteppableOpenHelper.TABLE_NAME1, null, values);
-                    Log.v("DATABASE TRY", "LONG " + id);
-                }else{ // It's the initialize phase
-
+                    UnsteppableOpenHelper.insertSingleStep(getBaseContext(), timestamp, day, hour);
                 }
                 createNotification(androidStepCounter);
         }
@@ -261,14 +221,7 @@ public class StepCountService extends Service implements SensorEventListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ContentValues values = new ContentValues();
-        values.put(UnsteppableOpenHelper.KEY_TIMESTAMP, timestamp);
-        values.put(UnsteppableOpenHelper.KEY_DAY, day);
-        values.put(UnsteppableOpenHelper.KEY_BASE_GOAL , baseGoal);
-        values.put(UnsteppableOpenHelper.KEY_ACTUAL_GOAL , actualGoal);
-        values.put(UnsteppableOpenHelper.KEY_STEPS, androidStepCounter);
-        long id = database.update(UnsteppableOpenHelper.TABLE_NAME2, values, "day = ?", new String[]{day});
-        Log.v("DATABASE TABLE2", "Update row - LONG " + id);
+        UnsteppableOpenHelper.insertDayReport(getBaseContext(), timestamp, day, baseGoal, actualGoal);
         Log.v(TAG, "Stop");
         unregisterAlarmBroadcast();
         serviceStopped = true;
