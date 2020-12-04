@@ -4,11 +4,14 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -27,6 +30,7 @@ import com.google.android.material.tabs.TabLayout;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         WeatherStatus weather = getCurrentLocation();
-        navigationView.getMenu().findItem(R.id.weather).setIcon(weather.getIcon());
-        navigationView.getMenu().findItem(R.id.weather).setTitle(weather.getName());
+        ((ImageView) findViewById(R.id.weather_image)).setImageResource(weather.getIcon());
+        ((TextView) findViewById(R.id.weather_text)).setText(weather.getName());
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

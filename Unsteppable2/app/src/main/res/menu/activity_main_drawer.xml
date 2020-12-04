@@ -13,12 +13,6 @@
             android:icon="@drawable/ic_menu_gallery"
             android:title="@string/menu_trophies" />
     </group>
-    <group android:id="@+id/weather_container">
-        <item
-            android:id="@+id/weather"
-            android:title="Weather"
-            android:icon="@drawable/ic_sunny"/>
-    </group>
 
 
 
