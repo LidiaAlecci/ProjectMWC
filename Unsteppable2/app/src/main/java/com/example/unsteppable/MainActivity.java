@@ -95,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         WeatherStatus weather = getCurrentLocation();
-        ((ImageView) findViewById(R.id.weather_image)).setImageResource(weather.getIcon());
-        ((TextView) findViewById(R.id.weather_text)).setText(weather.getName());
+        //((ImageView) findViewById(R.id.weather_image)).setImageResource(weather.getIcon());
+        //((TextView) findViewById(R.id.weather_text)).setText(weather.getName());
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
-import com.example.unsteppable.boot.StepCountService;
+import com.example.unsteppable.boot.StepDetectorService;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
@@ -65,7 +65,7 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
         // BROADCAST
-        this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION)); // BROADCAST
+        this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION)); // BROADCAST
 
         // Get the number of steps stored in the current date
         Date cDate = new Date();

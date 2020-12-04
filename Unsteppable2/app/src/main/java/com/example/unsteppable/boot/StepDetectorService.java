@@ -5,7 +5,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
+
 import com.example.unsteppable.R;
 import android.content.Context;
 import android.content.Intent;
@@ -33,15 +33,14 @@ import com.example.unsteppable.db.UnsteppableOpenHelper;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-public class StepCountService extends Service implements SensorEventListener {
+public class StepDetectorService extends Service implements SensorEventListener {
     SensorManager sensorManager;
-    Sensor sensorStepCounter;
+    Sensor sensorStepDetector;
     private static final String TAG = "STEP_SERVICE";
     private final Handler handler = new Handler();
     private Notification notification = null;
     // Android step counter
-    public int androidStepCounter = 0;
-    //public int oldSteps = 0;
+    public int androidSteps = 0;
     public int baseGoal = 6000;
     public int actualGoal = 6000;
     boolean serviceStopped; // Boolean variable to control if the service is stopped
@@ -79,7 +78,7 @@ public class StepCountService extends Service implements SensorEventListener {
         registerAlarmBroadcast();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
         // get, if any, the steps already register in the db
-        androidStepCounter = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDay());
+        androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDay());
     }
 
     // utility to have current day and the timestamp in the right format
@@ -120,8 +119,7 @@ public class StepCountService extends Service implements SensorEventListener {
     }
 
     private void restart() {
-        //oldSteps = 0;
-        androidStepCounter = 0;
+        androidSteps = 0;
     }
 
 
@@ -157,9 +155,9 @@ public class StepCountService extends Service implements SensorEventListener {
         handler.post(updateBroadcastData);
 
         sensorManager = (SensorManager) getSystemService(getApplicationContext().SENSOR_SERVICE);
-        sensorStepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-        if (sensorStepCounter != null) {
-            sensorManager.registerListener(this, sensorStepCounter, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorStepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        if (sensorStepDetector != null) {
+            sensorManager.registerListener(this, sensorStepDetector, SensorManager.SENSOR_DELAY_NORMAL);
         }else {
             handler.post(new ToastRunnable(R.string.step_not_available));
         }
@@ -182,28 +180,18 @@ public class StepCountService extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_STEP_COUNTER:
+            case Sensor.TYPE_STEP_DETECTOR:
                 // Calculate the number of steps
-                /*
-                int countSteps = (int) event.values[0];
-                if(oldSteps == 0){
-                    oldSteps = (int) event.values[0];
-                    if(androidStepCounter != 0){
-                        oldSteps = oldSteps - androidStepCounter;
-                    }
-                }
-                //androidStepCounter += (int) event.values[0];
-                androidStepCounter = countSteps - oldSteps;*/
-                androidStepCounter += 1;
-                Log.v(TAG, "Num.steps: " + String.valueOf(androidStepCounter));
-                if(androidStepCounter != 0) { // It's not the initialize phase
+                androidSteps += 1;
+                Log.v(TAG, "Num.steps: " + String.valueOf(androidSteps));
+                if(androidSteps != 0) { // It's not the initialize phase
                     // Timestamp
                     long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
                     updateTimeStamp(timeInMillis);
                     // Insert the data in the database
                     UnsteppableOpenHelper.insertSingleStep(getBaseContext(), timestamp, day, hour);
                 }
-                createNotification(androidStepCounter);
+                createNotification(androidSteps);
         }
     }
 
@@ -259,8 +247,8 @@ public class StepCountService extends Service implements SensorEventListener {
     private void broadcastSensorValue() {
         //Log.v(TAG, "Data to Activity");
         // add data to intent
-        intent.putExtra("Counted_Steps_Int", androidStepCounter);
-        intent.putExtra("Counted_Steps", String.valueOf(androidStepCounter));
+        intent.putExtra("Counted_Steps_Int", androidSteps);
+        intent.putExtra("Counted_Steps", String.valueOf(androidSteps));
         //intent.putExtra("Goal_Steps_Int", );
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
