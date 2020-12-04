@@ -1,16 +1,26 @@
 package com.example.unsteppable.boot;
 
-import android.graphics.drawable.Drawable;
-
-import androidx.annotation.DrawableRes;
-
 import com.example.unsteppable.R;
 
 public enum WeatherStatus{
         CLEAR("Sunny", R.drawable.ic_sunny),
         CLOUDS ("Cloudy",R.drawable.ic_cloudy),
-        RAINY("Rainy", R.drawable.ic_rain),
-        SNOWY( "Snowy", R.drawable.ic_snowy);
+        RAIN("Rainy", R.drawable.ic_rain),
+        THUNDERSTORM("Rainy", R.drawable.ic_thunderstorm),
+        DRIZZLE("Rainy", R.drawable.ic_rain),
+        SNOW( "Snowy", R.drawable.ic_snowy),
+
+        //All in the atmosphere category
+        MIST("Misty", R.drawable.ic_foggy),
+        FOG("Foggy", R.drawable.ic_foggy),
+        SQUALL("Squall", R.drawable.ic_windy),
+        SMOKE("Smoke", R.drawable.ic_windy),
+        HAZE("Haze", R.drawable.ic_foggy),
+        DUST("Dust", R.drawable.ic_windy),
+        SAND("Sand", R.drawable.ic_foggy),
+        ASH("Ash", R.drawable.ic_foggy),
+        TORNADO("Tornado", R.drawable.ic_tornado);
+
         int icon;
         String name;
 
