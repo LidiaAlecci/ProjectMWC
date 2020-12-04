@@ -71,9 +71,9 @@ public class StepDetectorService extends Service implements SensorEventListener 
         intent = new Intent(BROADCAST_ACTION);
         //Register AlarmManager Broadcast receive.
         calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 23); // alarm hour
-        calendar.set(Calendar.MINUTE, 59); // alarm minute
-        calendar.set(Calendar.SECOND, 59); // alarm second
+        calendar.set(Calendar.HOUR_OF_DAY, 0); // alarm hour
+        calendar.set(Calendar.MINUTE, 0); // alarm minute
+        calendar.set(Calendar.SECOND, 0); // alarm second
         Log.v("ALARM Broadcast", "calendar: " + String.valueOf(calendar.getTime()));
         long intendedTime = calendar.getTimeInMillis();
         registerAlarmBroadcast();
@@ -81,6 +81,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         // get, if any, the steps already register in the db
         androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDay());
         createNotification(androidSteps);
+        UnsteppableOpenHelper.insertDayReport(getBaseContext(),baseGoal,actualGoal);
     }
 
     // utility to have current day and the timestamp in the right format
@@ -102,7 +103,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
             public void onReceive(Context context, Intent intent) {
                 Log.i(TAG,"BroadcastReceiver::OnReceive()");
                 // Insert the data in the database
-                UnsteppableOpenHelper.insertDayReport(context,timestamp, day, baseGoal, actualGoal);
+                UnsteppableOpenHelper.insertDayReport(context, baseGoal, actualGoal);
                 if(!getCurrentDay().equals(day)){
                     restart();
                 }
@@ -218,7 +219,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        UnsteppableOpenHelper.insertDayReport(getBaseContext(), timestamp, day, baseGoal, actualGoal);
+        //UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
         Log.v(TAG, "Stop");
         unregisterAlarmBroadcast();
         serviceStopped = true;

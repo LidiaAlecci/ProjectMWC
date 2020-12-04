@@ -17,8 +17,8 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "unsteppable";
     public static final String TAG = "DATABASE";
 
-    public static final String TABLE_NAME1 = "num_steps";
-    public static final String TABLE_NAME2 = "dashboard";
+    public static final String TABLE_STEPS = "steps";
+    public static final String TABLE_DASHBOARD = "dashboard";
     public static final String KEY_ID = "id";
     public static final String KEY_TIMESTAMP = "timestamp";
     public static final String KEY_BASE_GOAL = "baseGoal";
@@ -28,11 +28,12 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
     public static final String KEY_HOUR = "hour";
 
     // Default SQL for creating a table in a database
-    public static final String CREATE_TABLE2_SQL = "CREATE TABLE " + TABLE_NAME2 + " (" +
-            KEY_ID + " INTEGER PRIMARY KEY, " + KEY_DAY + " TEXT, " + KEY_BASE_GOAL + " TEXT, "
-            + KEY_ACTUAL_GOAL + " TEXT, " + KEY_STEPS + " TEXT, "  + KEY_TIMESTAMP + " TEXT);";
 
-    public static final String CREATE_TABLE1_SQL = "CREATE TABLE " + TABLE_NAME1 + " (" +
+    public static final String CREATE_TABLE_DASHBOARD_SQL = "CREATE TABLE " + TABLE_DASHBOARD + " (" +
+            KEY_ID + " INTEGER PRIMARY KEY, " + KEY_DAY + " TEXT, " + KEY_BASE_GOAL + " TEXT, "
+            + KEY_ACTUAL_GOAL + " TEXT, " + KEY_STEPS + " TEXT);";
+
+    public static final String CREATE_TABLE_STEPS_SQL = "CREATE TABLE " + TABLE_STEPS + " (" +
             KEY_ID + " INTEGER PRIMARY KEY, " + KEY_DAY + " TEXT, " + KEY_HOUR + " TEXT, "
             + KEY_TIMESTAMP + " TEXT);";
 
@@ -45,8 +46,8 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        db.execSQL(CREATE_TABLE1_SQL);
-        db.execSQL(CREATE_TABLE2_SQL);
+        db.execSQL(CREATE_TABLE_STEPS_SQL);
+        db.execSQL(CREATE_TABLE_DASHBOARD_SQL);
         //Log.v(TAG, "created two tables");
     }
 
@@ -61,15 +62,36 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(UnsteppableOpenHelper.KEY_DAY, day);
         values.put(UnsteppableOpenHelper.KEY_HOUR, hour);
         SQLiteDatabase database = getDatabase(context);
-        long id = database.insert(UnsteppableOpenHelper.TABLE_NAME1, null, values);
+        long id = database.insert(UnsteppableOpenHelper.TABLE_STEPS, null, values);
         Log.v(TAG, "insertSingleStep() - Id: " + id);
     }
 
-    public static void insertDayReport(Context context,String timestamp, String day, Integer baseGoal, Integer actualGoal){
-        String lastDayInTab2 = UnsteppableOpenHelper.getLastDayFromTab2(context);
-        Log.d(TAG, "value of lastDayInTab2: " + lastDayInTab2);
+    public static void insertDayReport(Context context, Integer baseGoal, Integer actualGoal){
+        long id = 0;
+        String lastDayInDashboard = UnsteppableOpenHelper.getLastDayFromDashboard(context);
+        Log.d(TAG, "value of lastDayInDashboard: " + lastDayInDashboard);
+        String lastDayInNumSteps = UnsteppableOpenHelper.getLastDayFromNumSteps(context);
+        Log.d(TAG, "value of lastDayInNumSteps: " + lastDayInNumSteps);
         String[] currentDayAndDate = getCurrentDayAndDate();
-        if(day == null || timestamp == null){
+        if(lastDayInNumSteps != null && !currentDayAndDate[0].equals(lastDayInNumSteps)){
+            ContentValues values = new ContentValues();
+            values.put(UnsteppableOpenHelper.KEY_DAY, lastDayInNumSteps);
+            Integer androidStepCounter = UnsteppableOpenHelper.getStepsByDayFromTab1(context, lastDayInNumSteps);
+            values.put(UnsteppableOpenHelper.KEY_STEPS, androidStepCounter);
+            SQLiteDatabase database = getDatabase(context);
+            if(lastDayInNumSteps.equals(lastDayInDashboard)){
+                id = database.update(UnsteppableOpenHelper.TABLE_DASHBOARD, values, "day = ?", new String[]{lastDayInDashboard});
+                Log.v("DATABASE", "Update row in Dashboard - LONG " + id);
+            }else{
+                values.put(UnsteppableOpenHelper.KEY_BASE_GOAL , baseGoal);
+                values.put(UnsteppableOpenHelper.KEY_ACTUAL_GOAL , actualGoal);
+                id = database.insert(UnsteppableOpenHelper.TABLE_DASHBOARD, null, values);
+                Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
+            }
+            database.delete(UnsteppableOpenHelper.TABLE_STEPS,"day = ?",new String[]{lastDayInNumSteps});
+        }
+
+        /*if(day == null || timestamp == null){
             day = currentDayAndDate[0];
             timestamp = currentDayAndDate[1];
         }
@@ -103,7 +125,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         }
 
         long id = database.update(UnsteppableOpenHelper.TABLE_NAME2, values, "day = ?", new String[]{day});
-        Log.v(TAG, "Update row - LONG " + id);
+        Log.v(TAG, "Update row - LONG " + id);*/
 
     }
 
@@ -120,7 +142,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         String where = UnsteppableOpenHelper.KEY_DAY + " = ?";
         String [] whereArgs = { date };
 
-        Cursor cursor = database.query(UnsteppableOpenHelper.TABLE_NAME1, null, where, whereArgs, null,
+        Cursor cursor = database.query(UnsteppableOpenHelper.TABLE_STEPS, null, where, whereArgs, null,
                 null, null );
 
         // iterate over returned elements
@@ -136,14 +158,11 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         return numSteps;
     }
 
-    public static String getLastDayFromTab2(Context context){
+    public static String getLastDayFromDashboard(Context context){
         String day = null;
         // Get the readable database
         SQLiteDatabase database = getDatabase(context);
-
-
-        Cursor cursor = database.rawQuery("SELECT * FROM " +UnsteppableOpenHelper.TABLE_NAME2 + " ORDER BY id DESC LIMIT 1;", null);
-
+        Cursor cursor = database.rawQuery("SELECT * FROM " +UnsteppableOpenHelper.TABLE_DASHBOARD + " ORDER BY id DESC LIMIT 1;", null);
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
@@ -151,7 +170,21 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
             cursor.moveToNext();
         }
         database.close();
+        return day;
+    }
 
+    public static String getLastDayFromNumSteps(Context context){
+        String day = null;
+        // Get the readable database
+        SQLiteDatabase database = getDatabase(context);
+        Cursor cursor = database.rawQuery("SELECT * FROM " +UnsteppableOpenHelper.TABLE_STEPS + " ORDER BY id DESC LIMIT 1;", null);
+        // iterate over returned elements
+        cursor.moveToFirst();
+        for (int index=0; index < cursor.getCount(); index++){
+            day = cursor.getString(cursor.getColumnIndex("day"));
+            cursor.moveToNext();
+        }
+        database.close();
         return day;
     }
 
