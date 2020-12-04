@@ -39,6 +39,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private static final String TAG = "STEP_SERVICE";
     private final Handler handler = new Handler();
     private Notification notification = null;
+    int appIcon = R.drawable.ic_launcher_foreground;
     // Android step counter
     public int androidSteps = 0;
     public int baseGoal = 6000;
@@ -79,6 +80,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
         // get, if any, the steps already register in the db
         androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDay());
+        createNotification(androidSteps);
     }
 
     // utility to have current day and the timestamp in the right format
@@ -126,14 +128,15 @@ public class StepDetectorService extends Service implements SensorEventListener 
     public void createNotification(int steps){
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        //Log.v(TAG, "createNotification with " + steps + " steps");
+
 
         notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Unsteppable is running")
                 .setContentText(steps + " steps done")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(appIcon)
+                .setNotificationSilent()
                 .setContentIntent(pendingIntentNotification)
-                .setVibrate(null)
-                .setSound(null)
                 .build();
 
         startForeground(1,notification);

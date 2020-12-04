@@ -11,7 +11,7 @@ import android.os.Build;
 public class BackgroundServiceHelper {
     String countedStep;
     private static final String TAG = "SENSOR_EVENT";
-    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
+    public static final String CHANNEL_ID = "ServiceStepDetectorChannel";
 
     private static BackgroundServiceHelper instance = null;
 

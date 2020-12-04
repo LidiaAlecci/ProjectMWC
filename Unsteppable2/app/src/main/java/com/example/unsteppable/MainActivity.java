@@ -49,8 +49,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 46;
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 47;
+    private static final int REQUEST_RECEIVE_BOOT_COMPLETED = 55;
+
     private AppBarConfiguration mAppBarConfiguration;
-    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
+    public static final String CHANNEL_ID = "ServiceStepDetectorChannel";
     private boolean runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
 
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
             getCurrentLocation();
         }
     }
-
+    // Ask for write external storage permission
     private void getWriteExternalStorage() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -234,13 +236,25 @@ public class MainActivity extends AppCompatActivity {
     // Ask for read external storage permission
     private void getReadExternalStorage() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]
                             {Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_READ_EXTERNAL_STORAGE);
         }
     }
+
+    // Ask for boot permission
+    private void getBoot() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.RECEIVE_BOOT_COMPLETED)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.RECEIVE_BOOT_COMPLETED},
+                    REQUEST_RECEIVE_BOOT_COMPLETED);
+        }
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -277,12 +291,23 @@ public class MainActivity extends AppCompatActivity {
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
-                /*
+
             case REQUEST_WRITE_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getWriteExternalStorage();
+                }  else {
+                    Toast.makeText(this,
+                            R.string.permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            case REQUEST_RECEIVE_BOOT_COMPLETED:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getBoot();
                 }  else {
                     Toast.makeText(this,
                             R.string.permission_denied,
@@ -299,7 +324,6 @@ public class MainActivity extends AppCompatActivity {
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
-                */
 
         }
     }
