@@ -26,8 +26,10 @@ import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.example.unsteppable.MainActivity;
+import com.example.unsteppable.SettingsActivity;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
@@ -40,6 +42,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private final Handler handler = new Handler();
     private Notification notification = null;
     int appIcon = R.drawable.ic_launcher_foreground;
+    int badgeIcon = R.drawable.ic_launcher_foreground;
     // Android step counter
     public int androidSteps = 0;
     public int baseGoal = 6000;
@@ -123,6 +126,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
 
     private void restart() {
         androidSteps = 0;
+        createNotification(0);
     }
 
 
@@ -196,6 +200,31 @@ public class StepDetectorService extends Service implements SensorEventListener 
                     UnsteppableOpenHelper.insertSingleStep(getBaseContext(), timestamp, day, hour);
                 }
                 createNotification(androidSteps);
+                checkGoal();
+        }
+    }
+
+    private void checkGoal(){
+        if (androidSteps == actualGoal){
+            // Create an explicit intent for an Activity in your app
+            Intent notificationIntent = new Intent(this, SettingsActivity.class);
+            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(badgeIcon)
+                    .setContentTitle("Congrats! You reach your daily goal!")
+                    .setContentText("This day is almost over, but why not try to push yourself further?")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText("This day is almost over, but why not try to push yourself further?"))
+
+                    // Set the intent that will fire when the user taps the notification
+                    .setContentIntent(pendingIntentNotification)
+                    .setAutoCancel(true);
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(3, builder.build());
         }
     }
 
@@ -253,21 +282,21 @@ public class StepDetectorService extends Service implements SensorEventListener 
         // add data to intent
         intent.putExtra("Counted_Steps_Int", androidSteps);
         intent.putExtra("Counted_Steps", String.valueOf(androidSteps));
-        //intent.putExtra("Goal_Steps_Int", );
+        intent.putExtra("Goal_Steps_Int", actualGoal);
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
     }
 
-    // updateDatabase updates the Database at 23:59
+    // updateWeather updates the Weather every x hours
     /*
     private Runnable updateDatabase = new Runnable() {
         public void run() {
             if (!serviceStopped) { // If service is still running keep it updated
                 //TO DO
-                // Update second database
+                // Update weather
 
                 // After the delay this Runnable will be executed again
-                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(60));
+                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(x*60));
             }
         }
     };*/
