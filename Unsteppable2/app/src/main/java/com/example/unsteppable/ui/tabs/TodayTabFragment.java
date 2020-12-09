@@ -33,17 +33,20 @@ public class TodayTabFragment extends Fragment {
     /* BROADCAST STUFF */
 
     private int countedStep;
-    private int goalSteps = 6000;
+    private int baseGoal = 6000;
+    private int actualGoal = 6000;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
             countedStep = intent.getIntExtra("Counted_Steps_Int", 0);//intent.getStringExtra("Counted_Step");
-            goalSteps = intent.getIntExtra("Goal_Steps_Int", 6000);
+            baseGoal = intent.getIntExtra("Base_Goal_Int", 6000);
+            actualGoal = intent.getIntExtra("Actual_Goal_Int", 6000);
             //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
-            mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+            mWaveLoad.setProgressValue(countedStep*100/actualGoal);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
+            mWaveLoad.setBottomTitle(String.valueOf(actualGoal));
             //Log.d("BROADCAST in TodayTabFragment: getProgressValue", String.valueOf(mWaveLoad.getProgressValue()));
         }
     };
@@ -72,7 +75,7 @@ public class TodayTabFragment extends Fragment {
         String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
         countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
         Log.d("STORED STEPS TODAY", "countedStep " + String.valueOf(countedStep));
-        mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+        mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
         Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
 

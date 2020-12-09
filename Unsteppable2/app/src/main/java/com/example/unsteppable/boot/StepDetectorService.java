@@ -33,20 +33,22 @@ import com.example.unsteppable.SettingsActivity;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
 
 public class StepDetectorService extends Service implements SensorEventListener {
     SensorManager sensorManager;
     Sensor sensorStepDetector;
     private static final String TAG = "STEP_SERVICE";
+    private UnsteppableOpenHelper databaseOpenHelper = null;
     private final Handler handler = new Handler();
     private Notification notification = null;
     int appIcon = R.drawable.ic_launcher_foreground;
     int badgeIcon = R.drawable.ic_launcher_foreground;
     // Android step counter
     public int androidSteps = 0;
-    public int baseGoal = 6000;
-    public int actualGoal = 6000;
+    public int baseGoal = 200;
+    public int actualGoal = 200;
     boolean serviceStopped; // Boolean variable to control if the service is stopped
 
     PendingIntent pendingIntent;
@@ -71,6 +73,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     @Override
     public void onCreate() {
         super.onCreate();
+        databaseOpenHelper = UnsteppableOpenHelper.getInstance(getBaseContext());
         intent = new Intent(BROADCAST_ACTION);
         //Register AlarmManager Broadcast receive.
         calendar = Calendar.getInstance();
@@ -82,9 +85,19 @@ public class StepDetectorService extends Service implements SensorEventListener 
         registerAlarmBroadcast();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
         // get, if any, the steps already register in the db
-        androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),getCurrentDay());
+        String currentDay = getCurrentDay();
+        androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),currentDay);
+        int baseGoalDB = UnsteppableOpenHelper.getBaseGoalByDate(getBaseContext(),currentDay);
+        int actualGoalDB =  UnsteppableOpenHelper.getActualGoalByDate(getBaseContext(),currentDay);
+        if(actualGoalDB != 0){
+            actualGoal = actualGoalDB;
+        }
+        if(baseGoalDB == 0){
+            baseGoal = baseGoalDB;
+        }
         createNotification(androidSteps);
-        UnsteppableOpenHelper.insertDayReport(getBaseContext(),baseGoal,actualGoal);
+        UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
+        broadcastSensorValue();
     }
 
     // utility to have current day and the timestamp in the right format
@@ -152,8 +165,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.v(TAG, "Start");
 
-        // Get an instance of the databases
-        UnsteppableOpenHelper databaseOpenHelper = new UnsteppableOpenHelper(getApplicationContext());
+        // Get an instance of the database
         database = databaseOpenHelper.getWritableDatabase();
 
         // Initialize Handler
@@ -184,7 +196,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     }
 
     // Required method: Sensor Event
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
@@ -204,6 +216,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void checkGoal(){
         if (androidSteps == actualGoal){
             // Create an explicit intent for an Activity in your app
@@ -213,18 +226,76 @@ public class StepDetectorService extends Service implements SensorEventListener 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(badgeIcon)
                     .setContentTitle("Congrats! You reach your daily goal!")
-                    .setContentText("This day is almost over, but why not try to push yourself further?")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setStyle(new NotificationCompat.BigTextStyle()
-                            .bigText("This day is almost over, but why not try to push yourself further?"))
-
                     // Set the intent that will fire when the user taps the notification
                     .setContentIntent(pendingIntentNotification)
                     .setAutoCancel(true);
+            Calendar calendar = Calendar.getInstance();
+            int hour24hrs = calendar.get(Calendar.HOUR_OF_DAY);
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            Log.v(TAG, "Calendar hour of day = "+ hour24hrs);
+            if(hour24hrs > 17){
+                builder.setContentText("This day is almost over, but why not try to push yourself further?")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("This day is almost over, but why not try to push yourself further?"));
+            }else{
+                builder.setContentText("There is still enough time to break your records, change your daily goal!\n" +
+                        "“When you push yourself beyond limits, you discover inner reserves, which you never thought existed earlier.” - Manoj Arora, Dream On ")
+                        .setStyle(new NotificationCompat.BigTextStyle()
+                                .bigText("There is still enough time to break your records, change your daily goal!\n" +
+                                        "“When you push yourself beyond limits, you discover inner reserves, which you never thought existed earlier.” - Manoj Arora, Dream On "));
+            }
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             // notificationId is a unique int for each notification that you must define
             notificationManager.notify(3, builder.build());
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"1", "Daily goal reached!", "You reach your daily goal");
+            checkBadge3days();
+            if(dayOfWeek == Calendar.SUNDAY){
+                checkBadgeWeek();
+            }
+
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void checkBadge3days(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_1 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_2 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        boolean day_m_1_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_1),
+                day_m_2_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_2);
+        if(day_m_1_reached && day_m_2_reached){
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"2", "Daily goal reached 3 days in a row!", "You reach your daily goal in the last three days, keep going!");
+        }
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void checkBadgeWeek(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_1 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_2 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_3 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_4 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_5 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String day_m_6 = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+        boolean day_m_1_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_1),
+                day_m_2_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_2),
+                day_m_3_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_3),
+                day_m_4_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_4),
+                day_m_5_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_5),
+                day_m_6_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_6);
+        if(day_m_1_reached && day_m_2_reached && day_m_3_reached && day_m_4_reached && day_m_5_reached && day_m_6_reached){
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"3", "Daily goal reached in all days in the previous week, well done!", "You reach your daily goal for all days in the previous week, ad maiora semper!");
         }
     }
 
@@ -282,7 +353,8 @@ public class StepDetectorService extends Service implements SensorEventListener 
         // add data to intent
         intent.putExtra("Counted_Steps_Int", androidSteps);
         intent.putExtra("Counted_Steps", String.valueOf(androidSteps));
-        intent.putExtra("Goal_Steps_Int", actualGoal);
+        intent.putExtra("Base_Goal_Int", baseGoal);
+        intent.putExtra("Actual_Goal_Int", actualGoal);
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
     }
