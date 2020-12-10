@@ -1,5 +1,6 @@
 package com.example.unsteppable.ui.tabs;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.anychart.AnyChart;
@@ -47,6 +49,7 @@ public class WeekTabFragment extends Fragment {
         fragment.setArguments(bundle);
         return fragment;
     }
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -66,8 +69,10 @@ public class WeekTabFragment extends Fragment {
         return root;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public Cartesian createColumnChart() {
         Map<String, Integer> graph_map = new TreeMap<>();
+        /*
         String date;
         Integer value;
         for(int i = 0; i < 7; i++){
@@ -75,9 +80,9 @@ public class WeekTabFragment extends Fragment {
             value = UnsteppableOpenHelper.getStepsByDayFromTab1(getContext(), date);
             graph_map.put(date, value);
             cal.add(Calendar.DATE, -1);
-        }
+        }*/
         //graph_map.putAll(stepsByDay);
-
+        graph_map = UnsteppableOpenHelper.getStepsLast7Days(getContext());
         Cartesian cartesian = AnyChart.column();
 
         List<DataEntry> data = new ArrayList<>();

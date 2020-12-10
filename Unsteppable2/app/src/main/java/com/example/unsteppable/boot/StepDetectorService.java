@@ -74,16 +74,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     public void onCreate() {
         super.onCreate();
         databaseOpenHelper = UnsteppableOpenHelper.getInstance(getBaseContext());
-        intent = new Intent(BROADCAST_ACTION);
-        //Register AlarmManager Broadcast receive.
-        calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0); // alarm hour
-        calendar.set(Calendar.MINUTE, 0); // alarm minute
-        calendar.set(Calendar.SECOND, 0); // alarm second
-        Log.v("ALARM Broadcast", "calendar: " + String.valueOf(calendar.getTime()));
-        long intendedTime = calendar.getTimeInMillis();
-        registerAlarmBroadcast();
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
+        day = getCurrentDay();
         // get, if any, the steps already register in the db
         String currentDay = getCurrentDay();
         androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),currentDay);
@@ -95,6 +86,16 @@ public class StepDetectorService extends Service implements SensorEventListener 
         if(baseGoalDB == 0){
             baseGoal = baseGoalDB;
         }
+        intent = new Intent(BROADCAST_ACTION);
+        //Register AlarmManager Broadcast receive.
+        calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0); // alarm hour
+        calendar.set(Calendar.MINUTE, 0); // alarm minute
+        calendar.set(Calendar.SECOND, 0); // alarm second
+        Log.v("ALARM Broadcast", "calendar: " + String.valueOf(calendar.getTime()));
+        long intendedTime = calendar.getTimeInMillis();
+        registerAlarmBroadcast();
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
         createNotification(androidSteps);
         UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
         broadcastSensorValue();
@@ -204,13 +205,15 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 // Calculate the number of steps
                 androidSteps += 1;
                 Log.v(TAG, "Num.steps: " + String.valueOf(androidSteps));
+                /*
                 if(androidSteps != 0) { // It's not the initialize phase
                     // Timestamp
-                    long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
-                    updateTimeStamp(timeInMillis);
-                    // Insert the data in the database
-                    UnsteppableOpenHelper.insertSingleStep(getBaseContext(), timestamp, day, hour);
-                }
+
+                }*/
+                long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
+                updateTimeStamp(timeInMillis);
+                // Insert the data in the database
+                UnsteppableOpenHelper.insertSingleStep(getBaseContext(), timestamp, day, hour);
                 createNotification(androidSteps);
                 checkGoal();
         }
