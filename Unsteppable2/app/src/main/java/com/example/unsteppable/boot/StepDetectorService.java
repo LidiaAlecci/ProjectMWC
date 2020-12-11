@@ -10,6 +10,7 @@ import com.example.unsteppable.R;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -27,6 +28,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.preference.EditTextPreference;
+import androidx.preference.PreferenceManager;
 
 import com.example.unsteppable.MainActivity;
 import com.example.unsteppable.SettingsActivity;
@@ -352,6 +355,9 @@ public class StepDetectorService extends Service implements SensorEventListener 
 
     /** Add data to the intent and send broadcast */
     private void broadcastSensorValue() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        baseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
+        actualGoal = baseGoal;//TODO
         //Log.v(TAG, "Data to Activity");
         // add data to intent
         intent.putExtra("Counted_Steps_Int", androidSteps);
