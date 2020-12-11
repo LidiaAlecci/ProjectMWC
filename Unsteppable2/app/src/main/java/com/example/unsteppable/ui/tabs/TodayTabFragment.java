@@ -84,6 +84,7 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
         Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
         WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
+
         ImageView weatherImage = root.findViewById(R.id.weather_image);
         weatherImage.setImageResource(weather.getIcon());
         ((TextView) root.findViewById(R.id.weather_text)).setText(weather.getName());

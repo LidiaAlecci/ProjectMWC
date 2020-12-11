@@ -19,7 +19,9 @@ public enum WeatherStatus{
         DUST("Dust", R.drawable.ic_windy),
         SAND("Sand", R.drawable.ic_foggy),
         ASH("Ash", R.drawable.ic_foggy),
-        TORNADO("Tornado", R.drawable.ic_tornado);
+        TORNADO("Tornado", R.drawable.ic_tornado),
+
+        UNKNOWN("Error", R.drawable.ic_alert_circle);
 
         int icon;
         String name;

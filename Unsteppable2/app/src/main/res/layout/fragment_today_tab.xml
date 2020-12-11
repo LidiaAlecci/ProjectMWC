@@ -54,7 +54,6 @@
         android:backgroundTint="?attr/colorPrimary"
         android:backgroundTintMode="src_atop"
         android:contentDescription="@string/weather_icon_description"
-        android:src="@drawable/ic_cloudy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
