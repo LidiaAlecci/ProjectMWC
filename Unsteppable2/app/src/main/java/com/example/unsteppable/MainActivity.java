@@ -50,7 +50,7 @@ import androidx.preference.PreferenceManager;
 
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class MainActivity extends AppCompatActivity{
 
     private BackgroundServiceHelper backgroundService;
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
@@ -71,15 +71,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String theme = preferences.getString(getResources().getString(R.string.app_theme_option), "Light");
         setTheme(theme);
-//        SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener(){
-//            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-//                if (key.equals(String.valueOf(R.string.app_theme_option))) {
-//                    setTheme(prefs.getString(getResources().getString(R.string.app_theme_option), "Light"));
-//                }
-//            }
-//
-//        };
-        preferences.registerOnSharedPreferenceChangeListener(this);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -316,10 +307,4 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(String.valueOf(R.string.app_theme_option))) {
-            setTheme(sharedPreferences.getString(getResources().getString(R.string.app_theme_option), "Light"));
-        }
-    }
 }
