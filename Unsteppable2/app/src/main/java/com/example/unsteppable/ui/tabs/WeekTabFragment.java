@@ -3,6 +3,7 @@ package com.example.unsteppable.ui.tabs;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.widget.ThemeUtils;
 import androidx.fragment.app.Fragment;
 
 import com.anychart.AnyChart;
@@ -56,15 +58,14 @@ public class WeekTabFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_week_tab, container, false);
-        TextView text = root.findViewById(R.id.text_week);
-        text.setText("Hello from week");
+
 
         //Create the Chart
         anyChartView = root.findViewById(R.id.dayBarChart);
         anyChartView.setProgressBar(root.findViewById(R.id.loadingBar));
 
         Cartesian cartesian = createColumnChart();
-        anyChartView.setBackgroundColor("#00000000");
+        anyChartView.setBackgroundColor("#FF000000");
         anyChartView.setChart(cartesian);
         return root;
     }
@@ -91,9 +92,18 @@ public class WeekTabFragment extends Fragment {
             data.add(new ValueDataEntry(entry.getKey(), entry.getValue()));
 
         Column column = cartesian.column(data);
+        TypedValue primaryValue = new TypedValue();
+        TypedValue primaryVariantValue = new TypedValue();
+        String prefix="#";
+        if (!this.getContext().getTheme().resolveAttribute(R.attr.colorPrimary, primaryValue, true)) {
+            this.getContext().getTheme().resolveAttribute(R.attr.colorOnBackground, primaryValue, true);
+        }
 
-        column.fill("#1EB980");
-        column.stroke("#1EB980");
+        if (!this.getContext().getTheme().resolveAttribute(R.attr.colorPrimaryVariant, primaryVariantValue, true)) {
+            this.getContext().getTheme().resolveAttribute(R.attr.colorOnBackground, primaryVariantValue, true);
+        }
+        column.fill(prefix+Integer.toHexString(primaryValue.data).substring(2));
+        column.stroke(prefix+Integer.toHexString(primaryVariantValue.data).substring(2));
 
         column.tooltip()
                 .titleFormat("At day: {%X}")
