@@ -2,10 +2,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name = "AppTheme" parent = "Theme.MaterialComponents.DayNight">
-        <item name="colorPrimary">@color/secondaryDarkColor</item>
-        <item name="colorPrimaryVariant">@color/secondaryColor</item>
-        <item name="colorSecondary">@color/primaryDarkColor</item>
-        <item name="colorSecondaryVariant">@color/primaryColor</item>
+        <item name="colorPrimary">@color/secondaryColor</item>
+        <item name="colorPrimaryVariant">@color/secondaryDarkColor</item>
+        <item name="colorSecondary">@color/primaryColor</item>
+        <item name="colorSecondaryVariant">@color/primaryDarkColor</item>
         <item name="colorOnPrimary">@color/primaryTextColor</item>
         <item name="colorOnSecondary">@color/primaryTextColor</item>
         <item name="tabBackground">@color/cardview_dark_background</item>

@@ -9,7 +9,4 @@
         <color name="primaryTextColor">#000000</color>
         <color name="secondaryTextColor">#000000</color>
 
-        <color name="darkPrimaryColor">#88d7e0</color>
-        <color name="darkSecondaryColor">#ffd35f</color>
-        <color name="darkPrimaryColorVariant">#43c9ce</color>
 </resources>

@@ -4,29 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     tools:context=".ui.tabs.TodayTabFragment">
 
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-    </LinearLayout>
-
+    <!--https://stackoverflow.com/questions/14208367/how-to-change-image-color-dynamically-in-android-->
     <me.itangqi.waveloadingview.WaveLoadingView
         android:id="@+id/waveLoadingView"
         android:layout_width="100pt"
         android:layout_height="100pt"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/linearLayout"
-        app:layout_constraintStart_toStartOf="@+id/linearLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.393"
         app:wlv_borderColor="?attr/colorPrimaryVariant"
         app:wlv_borderWidth="3dp"
         app:wlv_progressValue="40"
@@ -39,18 +28,17 @@
         app:wlv_titleCenterSize="50sp"
         app:wlv_titleCenterStrokeColor="?attr/colorSecondaryVariant"
         app:wlv_titleCenterStrokeWidth="3dp"
+
         app:wlv_triangle_direction="north"
         app:wlv_waveAmplitude="10"
-
         app:wlv_waveColor="?attr/colorPrimary"
         app:wlv_wave_background_Color="@android:color/transparent" />
 
-    <!--https://stackoverflow.com/questions/14208367/how-to-change-image-color-dynamically-in-android-->
     <ImageView
         android:id="@+id/weather_image"
         android:layout_width="97dp"
         android:layout_height="46dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="52dp"
         android:backgroundTint="?attr/colorPrimary"
         android:backgroundTintMode="src_atop"
         android:contentDescription="@string/weather_icon_description"
@@ -61,6 +49,7 @@
         android:id="@+id/weather_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:text="@string/app_name"
         android:textColor="?attr/colorOnBackground"
         app:layout_constraintEnd_toEndOf="parent"
