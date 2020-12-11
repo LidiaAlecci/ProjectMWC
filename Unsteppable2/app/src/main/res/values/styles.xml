@@ -1,10 +1,30 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="tabBackground">@color/primaryColor</item>
+        <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
+        <item name="colorSecondary">@color/secondaryColor</item>
+        <item name="colorSecondaryVariant">@color/secondaryDarkColor</item>
+        <item name="colorOnBackground">@color/primaryTextColor</item>
+        <item name="colorOnPrimary">@color/primaryTextColor</item>
+        <item name="colorOnSecondary">@color/primaryTextColor</item>
+        <item name="titleTextColor">@android:color/white</item>
+        <item name="colorControlNormal">@android:color/white</item>
+        <item name="toolbarStyle">@style/AppTheme.Toolbar</item>
+        <item name="drawerArrowStyle">@style/AppTheme.DrawerArrow</item>
+        <item name="android:statusBarColor" tools:ignore="NewApi">@color/primaryDarkColor</item>
+
+
+
+    </style>
+
+
+
+    <style name="AppTheme.DrawerArrow" parent="Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">@android:color/white</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -12,8 +32,14 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.Toolbar" parent="Widget.MaterialComponents.Toolbar" >
+        <item name="titleTextColor">@android:color/white</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.PopupOverlay" parent="Theme.MaterialComponents.DayNight" >
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+
 
 </resources>

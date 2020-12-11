@@ -38,4 +38,8 @@
     <string name="_0">0</string>
     <string name="steps">steps</string>
     <string name="menu_trophies">Badges</string>
+    <string name="weather_icon_description">Weather icon</string>
+    <string name="app_theme_option">App theme</string>
+    <string name="daily_goal">Daily Goal</string>
+    <string name="base_goal">Base daily goal</string>
 </resources>

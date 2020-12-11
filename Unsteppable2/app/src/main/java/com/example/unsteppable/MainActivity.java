@@ -3,7 +3,9 @@ package com.example.unsteppable;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -27,10 +29,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.theme.overlay.MaterialThemeOverlay;
 
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.StyleRes;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.ThemeUtils;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
@@ -40,8 +46,11 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     private BackgroundServiceHelper backgroundService;
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
@@ -57,7 +66,20 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String theme = preferences.getString(getResources().getString(R.string.app_theme_option), "Light");
+        setTheme(theme);
+//        SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener(){
+//            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+//                if (key.equals(String.valueOf(R.string.app_theme_option))) {
+//                    setTheme(prefs.getString(getResources().getString(R.string.app_theme_option), "Light"));
+//                }
+//            }
+//
+//        };
+        preferences.registerOnSharedPreferenceChangeListener(this);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         getWriteExternalStorage();
@@ -82,21 +104,18 @@ public class MainActivity extends AppCompatActivity {
 
 
         //FLOATING BUTTON
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         //NAVIGATION
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        WeatherStatus weather = getCurrentLocation();
-        ((ImageView) findViewById(R.id.weather_image)).setImageResource(weather.getIcon());
-        ((TextView) findViewById(R.id.weather_text)).setText(weather.getName());
 
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -109,12 +128,26 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+        WeatherService weatherService = WeatherService.getInstance();
+        weatherService.setActivity(this);
 
         /** START THINGS FOR SERVICE **/
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
         /** END THINGS FOR SERVICE **/
 
+    }
+
+    private void setTheme(String theme) {
+        switch(theme){
+            case "Light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+                break;
+            case "Dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+        }
     }
 
 
@@ -148,39 +181,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //LOCATION PART
-    @SuppressLint("MissingPermission")
-    private WeatherStatus getCurrentLocation() {
-        final LocationRequest locationRequest = new LocationRequest();
-        final double[] latitude = new double[1];
-        final double[] longitude = new double[1];
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(3000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-
-
-        LocationServices.getFusedLocationProviderClient(MainActivity.this)
-                .requestLocationUpdates(locationRequest, new LocationCallback() {
-
-                    @Override
-                    public void onLocationResult(LocationResult locationResult) {
-                        super.onLocationResult(locationResult);
-                        LocationServices.getFusedLocationProviderClient(MainActivity.this)
-                                .removeLocationUpdates(this);
-                        if (locationResult != null && locationResult.getLocations().size() > 0) {
-                            int latestLocationIndex = locationResult.getLocations().size() - 1;
-                            latitude[0] =
-                                    locationResult.getLocations().get(latestLocationIndex).getLatitude();
-                            longitude[0] =
-                                    locationResult.getLocations().get(latestLocationIndex).getLongitude();
-
-                        }
-                    }
-                }, Looper.getMainLooper());
-
-        return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
-    }
 
 
     /*** PERMISSION ***/
@@ -206,20 +207,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getLocation(){
-        if (ContextCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE_LOCATION_PERMISSION
-            );
 
-        } else {
-            getCurrentLocation();
-        }
-    }
 
     private void getWriteExternalStorage() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
@@ -271,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CODE_LOCATION_PERMISSION:
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    getLocation();
                 } else {
                     Toast.makeText(this,
                             R.string.permission_denied,
@@ -301,6 +288,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 */
 
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(String.valueOf(R.string.app_theme_option))) {
+            setTheme(sharedPreferences.getString(getResources().getString(R.string.app_theme_option), "Light"));
         }
     }
 }

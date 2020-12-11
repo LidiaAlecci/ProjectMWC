@@ -1,7 +1,21 @@
 package com.example.unsteppable.boot;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.example.unsteppable.MainActivity;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +28,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 //Wheather API part
-public class WeatherService extends AsyncTask<String, Void, String> {
+public final class WeatherService extends AsyncTask<String, Void, String> {
+    private static WeatherService instance;
+    private AppCompatActivity activity;
+    private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
+
+    private WeatherService(){
+
+    }
+
+    public static WeatherService getInstance(){
+        if (instance == null)
+                instance = new WeatherService();
+        return instance;
+    }
+    public void setActivity(AppCompatActivity activity){
+        this.activity = activity;
+    }
 
     @Override
     protected String doInBackground(String... address) {
@@ -84,8 +114,7 @@ public class WeatherService extends AsyncTask<String, Void, String> {
 
             Log.d("main", main);
             Log.d("description", description);
-            return getWeather(main);
-
+            return WeatherStatus.valueOf(main.toUpperCase());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +122,53 @@ public class WeatherService extends AsyncTask<String, Void, String> {
         return null;
     }
 
-    private static WeatherStatus getWeather(String weather){
-       return WeatherStatus.valueOf(weather.toUpperCase());
+
+    //LOCATION PART
+    @SuppressLint("MissingPermission")
+    public WeatherStatus getCurrentWeather() {
+        final LocationRequest locationRequest = new LocationRequest();
+        final double[] latitude = new double[1];
+        final double[] longitude = new double[1];
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(3000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+
+
+        LocationServices.getFusedLocationProviderClient(this.activity)
+                .requestLocationUpdates(locationRequest, new LocationCallback() {
+
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        super.onLocationResult(locationResult);
+                        LocationServices.getFusedLocationProviderClient(activity)
+                                .removeLocationUpdates(this);
+                        if (locationResult != null && locationResult.getLocations().size() > 0) {
+                            int latestLocationIndex = locationResult.getLocations().size() - 1;
+                            latitude[0] =
+                                    locationResult.getLocations().get(latestLocationIndex).getLatitude();
+                            longitude[0] =
+                                    locationResult.getLocations().get(latestLocationIndex).getLongitude();
+
+                        }
+                    }
+                }, Looper.getMainLooper());
+
+        return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
+    }
+
+    private void getLocation(){
+        if (ContextCompat.checkSelfPermission(
+                activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    activity,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_CODE_LOCATION_PERMISSION
+            );
+
+        } else {
+            getCurrentWeather();
+        }
     }
 }

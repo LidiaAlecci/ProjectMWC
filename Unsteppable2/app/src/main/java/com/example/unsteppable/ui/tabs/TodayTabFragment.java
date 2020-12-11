@@ -4,11 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
@@ -16,6 +19,8 @@ import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
 import com.example.unsteppable.boot.StepCountService;
+import com.example.unsteppable.boot.WeatherService;
+import com.example.unsteppable.boot.WeatherStatus;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
@@ -42,7 +47,8 @@ public class TodayTabFragment extends Fragment {
             countedStep = intent.getIntExtra("Counted_Steps_Int", 0);//intent.getStringExtra("Counted_Step");
             goalSteps = intent.getIntExtra("Goal_Steps_Int", 6000);
             //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
-            mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+//            mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+            mWaveLoad.setProgressValue(50);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
             //Log.d("BROADCAST in TodayTabFragment: getProgressValue", String.valueOf(mWaveLoad.getProgressValue()));
         }
@@ -75,7 +81,11 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad.setProgressValue(countedStep*100/goalSteps);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
         Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
-
+        WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
+        ImageView weatherImage = root.findViewById(R.id.weather_image);
+        weatherImage.setColorFilter(R.color.primaryColor, PorterDuff.Mode.SRC_ATOP);
+        weatherImage.setImageResource(weather.getIcon());
+        ((TextView) root.findViewById(R.id.weather_text)).setText(weather.getName());
 
 
         return root;

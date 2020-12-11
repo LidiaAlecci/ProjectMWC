@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name = "AppTheme" parent = "Theme.MaterialComponents.DayNight">
+        <item name="colorPrimary">@color/secondaryDarkColor</item>
+        <item name="colorPrimaryVariant">@color/secondaryColor</item>
+        <item name="colorSecondary">@color/primaryDarkColor</item>
+        <item name="colorSecondaryVariant">@color/primaryColor</item>
+        <item name="colorOnPrimary">@color/primaryTextColor</item>
+        <item name="colorOnSecondary">@color/primaryTextColor</item>
+        <item name="tabBackground">@color/cardview_dark_background</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+
+    <style name="WindowAnimationTransition">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+</resources>
