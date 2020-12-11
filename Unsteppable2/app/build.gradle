@@ -37,6 +37,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'me.itangqi.waveloadingview:library:0.3.5'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
-//    implementation 'com.github.AnyChart:AnyChart-Android:1.1.2'
+    implementation 'com.github.AnyChart:AnyChart-Android:1.1.2'
 
 }

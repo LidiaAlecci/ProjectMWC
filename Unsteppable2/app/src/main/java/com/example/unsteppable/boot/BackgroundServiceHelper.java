@@ -7,12 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
-import android.widget.TextView;
 
 public class BackgroundServiceHelper {
     String countedStep;
     private static final String TAG = "SENSOR_EVENT";
-    public static final String CHANNEL_ID = "ServiceStepCounterChannel";
+    public static final String CHANNEL_ID = "ServiceStepDetectorChannel";
 
     private static BackgroundServiceHelper instance = null;
 
@@ -51,10 +50,10 @@ public class BackgroundServiceHelper {
     }
 
     public void startService(Context context, Context baseContext){
-        context.registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION));
+        context.registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION));
         //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
         //stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
-        context.startForegroundService(new Intent(baseContext, StepCountService.class));
+        context.startForegroundService(new Intent(baseContext, StepDetectorService.class));
     }
 
 }

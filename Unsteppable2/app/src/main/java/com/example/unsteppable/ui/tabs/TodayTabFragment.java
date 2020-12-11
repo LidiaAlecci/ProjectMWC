@@ -18,9 +18,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.unsteppable.R;
-import com.example.unsteppable.boot.StepCountService;
 import com.example.unsteppable.boot.WeatherService;
 import com.example.unsteppable.boot.WeatherStatus;
+import com.example.unsteppable.boot.StepDetectorService;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
@@ -38,18 +38,20 @@ public class TodayTabFragment extends Fragment {
     /* BROADCAST STUFF */
 
     private int countedStep;
-    private int goalSteps = 6000;
+    private int baseGoal = 6000;
+    private int actualGoal = 6000;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
             countedStep = intent.getIntExtra("Counted_Steps_Int", 0);//intent.getStringExtra("Counted_Step");
-            goalSteps = intent.getIntExtra("Goal_Steps_Int", 6000);
+            baseGoal = intent.getIntExtra("Base_Goal_Int", 6000);
+            actualGoal = intent.getIntExtra("Actual_Goal_Int", 6000);
             //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
-//            mWaveLoad.setProgressValue(countedStep*100/goalSteps);
-            mWaveLoad.setProgressValue(50);
+            mWaveLoad.setProgressValue(countedStep*100/actualGoal);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
+            mWaveLoad.setBottomTitle(String.valueOf(actualGoal));
             //Log.d("BROADCAST in TodayTabFragment: getProgressValue", String.valueOf(mWaveLoad.getProgressValue()));
         }
     };
@@ -71,19 +73,18 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
         // BROADCAST
-        this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepCountService.BROADCAST_ACTION)); // BROADCAST
+        this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION)); // BROADCAST
 
         // Get the number of steps stored in the current date
         Date cDate = new Date();
         String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
         countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
         Log.d("STORED STEPS TODAY", "countedStep " + String.valueOf(countedStep));
-        mWaveLoad.setProgressValue(countedStep*100/goalSteps);
+        mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
         Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
         WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
         ImageView weatherImage = root.findViewById(R.id.weather_image);
-        weatherImage.setColorFilter(R.color.primaryColor, PorterDuff.Mode.SRC_ATOP);
         weatherImage.setImageResource(weather.getIcon());
         ((TextView) root.findViewById(R.id.weather_text)).setText(weather.getName());
 
