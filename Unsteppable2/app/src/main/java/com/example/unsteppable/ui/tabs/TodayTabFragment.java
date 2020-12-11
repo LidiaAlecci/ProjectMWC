@@ -29,10 +29,6 @@ import java.util.Date;
 import me.itangqi.waveloadingview.WaveLoadingView;
 
 public class TodayTabFragment extends Fragment {
-
-    private static final String ARG_SECTION_NUMBER = "section_number";
-
-    private PageViewModel pageViewModel;
     private WaveLoadingView mWaveLoad;
 
     /* BROADCAST STUFF */

@@ -1,44 +1,27 @@
 package com.example.unsteppable;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
+
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
+
 import android.view.MenuItem;
-import android.view.View;
+
 import android.view.Menu;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
+
 import com.example.unsteppable.boot.BackgroundServiceHelper;
 import com.example.unsteppable.boot.WeatherService;
-import com.example.unsteppable.boot.WeatherStatus;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.theme.overlay.MaterialThemeOverlay;
-
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.ThemeUtils;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -48,7 +31,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -78,33 +60,14 @@ public class MainActivity extends AppCompatActivity{
         getWriteExternalStorage();
         getReadExternalStorage();
 
-        //Log.d("TRY PERMISSION", "Before if");
         // Ask for activity recognition permission
         if (runningQOrLater) {
-            //Log.d("TRY PERMISSION", "trytry");
             getActivity();
         }
         backgroundService = BackgroundServiceHelper.getInstance();
-        //Log.d("TRY PERMISSION", "After if");
 
-        //Weather API part
-//        getLocation();
-        //String weather = getWeatherFromApi();
-        //TAB
         Toolbar toolbar = findViewById(R.id.toolbar);
-        TabLayout tabLayout = findViewById(R.id.tabs);
         setSupportActionBar(toolbar);
-
-
-        //FLOATING BUTTON
-//        FloatingActionButton fab = findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
 
         //NAVIGATION
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

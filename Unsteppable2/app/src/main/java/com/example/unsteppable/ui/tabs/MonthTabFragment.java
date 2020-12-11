@@ -3,6 +3,7 @@ package com.example.unsteppable.ui.tabs;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,11 +38,7 @@ import java.util.TreeMap;
 
 public class MonthTabFragment extends Fragment {
     AnyChartView anyChartView;
-    private static final String ARG_SECTION_NUMBER = "section_number";
-
-    private PageViewModel pageViewModel;
     Calendar cal = Calendar.getInstance();
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public static MonthTabFragment newInstance() {
         MonthTabFragment fragment = new MonthTabFragment();
@@ -73,13 +70,11 @@ public class MonthTabFragment extends Fragment {
         String date, today;
         Integer value;
         boolean todayIsNotPassed = true;
-        //today = dateFormat.format(cal.getTime());
         today = UnsteppableOpenHelper.getDay(cal.getTimeInMillis());
         cal.set(Calendar.DAY_OF_MONTH, 1);
         int maxForThisMonth = cal.getActualMaximum(Calendar.DATE);
 
         for(int i = 0; i < maxForThisMonth; i++){
-            //date = dateFormat.format(cal.getTime());
             date = UnsteppableOpenHelper.getDay(cal.getTimeInMillis());
             Log.d("Current date: ", date);
             if(todayIsNotPassed){
@@ -91,22 +86,25 @@ public class MonthTabFragment extends Fragment {
             if(date.equals(today)){
                 todayIsNotPassed = false;
             }
-            //value = UnsteppableOpenHelper.getStepsByDayFromTab1(getContext(), date);
             graph_map.put(date, value);
             cal.add(Calendar.DATE, 1);
         }
-        //graph_map = UnsteppableOpenHelper.getStepsLast30Days(getContext());
         Cartesian cartesian = AnyChart.column();
 
         List<DataEntry> data = new ArrayList<>();
 
-        for (Map.Entry<String,Integer> entry : graph_map.entrySet())
+        for (Map.Entry<String,Integer> entry : graph_map.entrySet()) {
             data.add(new ValueDataEntry(entry.getKey(), entry.getValue()));
+        }
 
         Column column = cartesian.column(data);
-
-        column.fill("#1EB980");
-        column.stroke("#1EB980");
+        TypedValue primaryValue = new TypedValue();
+        String prefix="#";
+        if (!this.requireContext().getTheme().resolveAttribute(R.attr.colorPrimary, primaryValue, true)) {
+            this.requireContext().getTheme().resolveAttribute(R.attr.colorOnBackground, primaryValue, true);
+        }
+        column.fill(prefix+Integer.toHexString(primaryValue.data).substring(2));
+        column.stroke(prefix+Integer.toHexString(primaryValue.data).substring(2));
 
         column.tooltip()
                 .titleFormat("At day: {%X}")

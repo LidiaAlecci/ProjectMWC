@@ -39,12 +39,6 @@ import java.util.TreeMap;
 public class WeekTabFragment extends Fragment {
     AnyChartView anyChartView;
 
-    private static final String ARG_SECTION_NUMBER = "section_number";
-
-    private PageViewModel pageViewModel;
-    Calendar cal = Calendar.getInstance();
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
     public static WeekTabFragment newInstance() {
         WeekTabFragment fragment = new WeekTabFragment();
         Bundle bundle = new Bundle();
@@ -65,45 +59,31 @@ public class WeekTabFragment extends Fragment {
         anyChartView.setProgressBar(root.findViewById(R.id.loadingBar));
 
         Cartesian cartesian = createColumnChart();
-        anyChartView.setBackgroundColor("#FF000000");
+        anyChartView.setBackgroundColor("#00000000");
         anyChartView.setChart(cartesian);
         return root;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public Cartesian createColumnChart() {
-        Map<String, Integer> graph_map = new TreeMap<>();
-        /*
-        String date;
-        Integer value;
-        for(int i = 0; i < 7; i++){
-            date = dateFormat.format(cal.getTime());
-            value = UnsteppableOpenHelper.getStepsByDayFromTab1(getContext(), date);
-            graph_map.put(date, value);
-            cal.add(Calendar.DATE, -1);
-        }*/
-        //graph_map.putAll(stepsByDay);
+        Map<String, Integer> graph_map;
         graph_map = UnsteppableOpenHelper.getStepsLast7Days(getContext());
         Cartesian cartesian = AnyChart.column();
 
         List<DataEntry> data = new ArrayList<>();
 
-        for (Map.Entry<String,Integer> entry : graph_map.entrySet())
+        for (Map.Entry<String,Integer> entry : graph_map.entrySet()) {
             data.add(new ValueDataEntry(entry.getKey(), entry.getValue()));
+        }
 
         Column column = cartesian.column(data);
         TypedValue primaryValue = new TypedValue();
-        TypedValue primaryVariantValue = new TypedValue();
         String prefix="#";
-        if (!this.getContext().getTheme().resolveAttribute(R.attr.colorPrimary, primaryValue, true)) {
-            this.getContext().getTheme().resolveAttribute(R.attr.colorOnBackground, primaryValue, true);
-        }
-
-        if (!this.getContext().getTheme().resolveAttribute(R.attr.colorPrimaryVariant, primaryVariantValue, true)) {
-            this.getContext().getTheme().resolveAttribute(R.attr.colorOnBackground, primaryVariantValue, true);
+        if (!this.requireContext().getTheme().resolveAttribute(R.attr.colorPrimary, primaryValue, true)) {
+            this.requireContext().getTheme().resolveAttribute(R.attr.colorOnBackground, primaryValue, true);
         }
         column.fill(prefix+Integer.toHexString(primaryValue.data).substring(2));
-        column.stroke(prefix+Integer.toHexString(primaryVariantValue.data).substring(2));
+        column.stroke(prefix+Integer.toHexString(primaryValue.data).substring(2));
 
         column.tooltip()
                 .titleFormat("At day: {%X}")
