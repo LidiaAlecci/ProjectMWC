@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +28,7 @@ import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
 
@@ -36,6 +40,9 @@ public class TodayTabFragment extends Fragment {
     private int countedStep;
     private int baseGoal = 6000;
     private int actualGoal = 6000;
+    private final Handler handler = new Handler();
+    private ImageView weatherImage;
+    private TextView weatherText;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -55,6 +62,7 @@ public class TodayTabFragment extends Fragment {
     /* END BROADCAST STUFF */
 
     public static TodayTabFragment newInstance() {
+
         TodayTabFragment fragment = new TodayTabFragment();
         Bundle bundle = new Bundle();
         fragment.setArguments(bundle);
@@ -65,6 +73,7 @@ public class TodayTabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         View root = inflater.inflate(R.layout.fragment_today_tab, container, false);
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
@@ -81,13 +90,28 @@ public class TodayTabFragment extends Fragment {
         Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
         WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
 
-        ImageView weatherImage = root.findViewById(R.id.weather_image);
+        weatherImage = root.findViewById(R.id.weather_image);
         weatherImage.setImageResource(weather.getIcon());
-        ((TextView) root.findViewById(R.id.weather_text)).setText(weather.getName());
-
+        weatherText = (TextView) root.findViewById(R.id.weather_text);
+        weatherText.setText(weather.getName());
+        handler.removeCallbacks(updateWeather);
+        handler.post(updateWeather);
 
         return root;
 
     }
+
+    private Runnable updateWeather = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+        public void run() {
+            // Update weather
+            WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
+            weatherImage.setImageResource(weather.getIcon());
+            weatherText.setText(weather.getName());
+            //Log.v("TODAY_TAB_FRAGMENT", "Try to updateWeather: " + weather.getName());
+            // After the delay this Runnable will be executed again
+            handler.postDelayed(this, TimeUnit.MINUTES.toMillis(120));
+        }
+    };
 
 }
