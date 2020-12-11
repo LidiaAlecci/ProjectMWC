@@ -35,9 +35,9 @@
         app:wlv_titleBottom="/6000"
         app:wlv_titleBottomColor="?attr/colorOnBackground"
         app:wlv_titleCenter="@string/_0"
-        app:wlv_titleCenterColor="?attr/colorSecondaryVariant"
+        app:wlv_titleCenterColor="?attr/colorSecondary"
         app:wlv_titleCenterSize="50sp"
-        app:wlv_titleCenterStrokeColor="?attr/colorSecondary"
+        app:wlv_titleCenterStrokeColor="?attr/colorSecondaryVariant"
         app:wlv_titleCenterStrokeWidth="3dp"
         app:wlv_triangle_direction="north"
         app:wlv_waveAmplitude="10"
@@ -54,19 +54,16 @@
         android:backgroundTint="?attr/colorPrimary"
         android:backgroundTintMode="src_atop"
         android:contentDescription="@string/weather_icon_description"
-        android:foregroundTint="?attr/colorPrimary"
-        android:foregroundTintMode="src_atop"
         android:src="@drawable/ic_cloudy"
-        android:tintMode="src_atop"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorPrimary" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/weather_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/app_name"
+        android:textColor="?attr/colorOnBackground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/weather_image"
         app:layout_constraintTop_toBottomOf="@+id/weather_image" />
