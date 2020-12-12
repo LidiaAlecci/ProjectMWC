@@ -37,9 +37,9 @@ public class TodayTabFragment extends Fragment {
 
     /* BROADCAST STUFF */
 
-    private int countedStep;
-    private int baseGoal = 6000;
-    private int actualGoal = 6000;
+    private int countedStep = 0;
+    private int baseGoal = 3000;
+    private int actualGoal = 3000;
     private final Handler handler = new Handler();
     private ImageView weatherImage;
     private TextView weatherText;
@@ -48,9 +48,9 @@ public class TodayTabFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
-            countedStep = intent.getIntExtra("Counted_Steps_Int", 0);//intent.getStringExtra("Counted_Step");
-            baseGoal = intent.getIntExtra("Base_Goal_Int", 6000);
-            actualGoal = intent.getIntExtra("Actual_Goal_Int", 6000);
+            countedStep = intent.getIntExtra("Counted_Steps_Int", countedStep);//intent.getStringExtra("Counted_Step");
+            baseGoal = intent.getIntExtra("Base_Goal_Int", baseGoal);
+            actualGoal = intent.getIntExtra("Actual_Goal_Int", actualGoal);
             //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
             mWaveLoad.setProgressValue(countedStep*100/actualGoal);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
@@ -94,7 +94,7 @@ public class TodayTabFragment extends Fragment {
         weatherImage.setImageResource(weather.getIcon());
         weatherText = (TextView) root.findViewById(R.id.weather_text);
         weatherText.setText(weather.getName());
-        handler.removeCallbacks(updateWeather);
+        //handler.removeCallbacks(updateWeather);
         handler.post(updateWeather);
 
         return root;

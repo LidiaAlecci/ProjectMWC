@@ -38,6 +38,7 @@ import com.example.unsteppable.db.UnsteppableOpenHelper;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class StepDetectorService extends Service implements SensorEventListener {
     SensorManager sensorManager;
@@ -48,15 +49,18 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private Notification notification = null;
     int appIcon = R.drawable.ic_launcher_foreground;
     int badgeIcon = R.drawable.ic_launcher_foreground;
+    double p = 0.0;// percent of change of actual goal based on weather and base goal
     // Android step counter
     public int androidSteps = 0;
-    public int baseGoal = 200;
-    public int actualGoal = 200;
+    public int baseGoal = 3000;
+    public int actualGoal = 3000;
     boolean serviceStopped; // Boolean variable to control if the service is stopped
 
     PendingIntent pendingIntent;
+    PendingIntent pendingIntent2;
     AlarmManager alarmManager;
     BroadcastReceiver broadcastAlarmReceiver;
+    BroadcastReceiver broadcastAlarmReceiver2;
     Calendar calendar;
 
     // SQLite Database
@@ -70,6 +74,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     Intent intent;
     public static final String BROADCAST_ACTION = "com.example.unsteppable.mybroadcast";
     public static final String BROADCAST_ACTION_ALARM = "com.example.unsteppable.alarm";
+    public static final String BROADCAST_ACTION_ALARM2 = "com.example.unsteppable.alarm2";
 
     /** Called when the service is being created. */
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -79,26 +84,32 @@ public class StepDetectorService extends Service implements SensorEventListener 
         databaseOpenHelper = UnsteppableOpenHelper.getInstance(getBaseContext());
         day = getCurrentDay();
         // get, if any, the steps already register in the db
-        String currentDay = getCurrentDay();
-        androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),currentDay);
-        int baseGoalDB = UnsteppableOpenHelper.getBaseGoalByDate(getBaseContext(),currentDay);
-        int actualGoalDB =  UnsteppableOpenHelper.getActualGoalByDate(getBaseContext(),currentDay);
+        //String currentDay = getCurrentDay();
+        androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),day);
+        int baseGoalDB = UnsteppableOpenHelper.getBaseGoalByDate(getBaseContext(),day);
+        int actualGoalDB =  UnsteppableOpenHelper.getActualGoalByDate(getBaseContext(),day);
         if(actualGoalDB != 0){
             actualGoal = actualGoalDB;
         }
-        if(baseGoalDB == 0){
+        if(baseGoalDB != 0){
             baseGoal = baseGoalDB;
         }
         intent = new Intent(BROADCAST_ACTION);
-        //Register AlarmManager Broadcast receive.
+        //Register AlarmManager Broadcast receive to save steps at midnight.
         calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0); // alarm hour
         calendar.set(Calendar.MINUTE, 0); // alarm minute
         calendar.set(Calendar.SECOND, 0); // alarm second
-        Log.v("ALARM Broadcast", "calendar: " + String.valueOf(calendar.getTime()));
+        //Log.v("ALARM Broadcast", "calendar: " + String.valueOf(calendar.getTime()));
         long intendedTime = calendar.getTimeInMillis();
         registerAlarmBroadcast();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
+        //Register AlarmManager Broadcast receive to save steps at midnight.
+        calendar.set(Calendar.HOUR_OF_DAY, 16); // alarm hour
+        intendedTime = calendar.getTimeInMillis();
+        registerAlarmBroadcast2();
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent2);
+
         createNotification(androidSteps);
         UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
         broadcastSensorValue();
@@ -112,6 +123,77 @@ public class StepDetectorService extends Service implements SensorEventListener 
         // Get the date, the day and the hour
         String currentDay = currentDate.substring(0,10);
         return currentDay;
+    }
+
+    private void registerAlarmBroadcast2() {
+        Log.i(TAG, "Going to register Intent.RegisterAlarmBroadcast2");
+        //This will be call when alarm time will reached.
+        final Context t = this;
+        broadcastAlarmReceiver2 = new BroadcastReceiver() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG,"BroadcastReceiver2::OnReceive()");
+                if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
+                    Intent notificationIntent = new Intent(t, SettingsActivity.class);
+                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    PendingIntent pendingIntentNotification = PendingIntent.getActivity(t, 0, notificationIntent, 0);
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(t, CHANNEL_ID)
+                            .setSmallIcon(appIcon)
+                            .setContentTitle("Weekly report")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            // Set the intent that will fire when the user taps the notification
+                            .setContentIntent(pendingIntentNotification)
+                            .setAutoCancel(true);
+                    Calendar calendar = Calendar.getInstance();
+                    String day;
+                    int daysReached = 0;
+                    double meanSteps = 0.0;
+                    for(int i = 0; i<7; i++){
+                        calendar.add(Calendar.DAY_OF_YEAR, -1);
+                        day = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+                        meanSteps = meanSteps + UnsteppableOpenHelper.getStepsFromDashboardByDate(t,day);
+                        if(UnsteppableOpenHelper.getReachedByDate(t,day)){
+                            daysReached++;
+                        }
+                    }
+                    meanSteps = meanSteps/7;
+                    String message = "";
+                    if(daysReached > 3){
+                        message = "This week went very well, you're really unstoppable! \n" +
+                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ meanSteps
+                                + ". Why don't you challenge yourself increasing your daily goal?";
+                    }else{
+                        message = "This week didn't go so well, don't worry you can do better in the next one, " +
+                                "there will always be a new opportunity to prove that you're unstoppable! \n" +
+                                "You reached "+ daysReached + " time";
+                        if(daysReached >1) {
+                            message += "s";
+                        }
+                        message  += (" your daily goal, your steps mean is: "+ meanSteps
+                        + ". There is no shame on decrease your daily goal: “If you concentrate on small, manageable steps you can cross unimaginable distances.”\n" +
+                                "― Shaun Hick");
+                    }
+                    builder.setContentText(message)
+                            .setStyle(new NotificationCompat.BigTextStyle()
+                                    .bigText(message));
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(t);
+                    // notificationId is a unique int for each notification that you must define
+                    notificationManager.notify(4, builder.build());
+                }
+
+            }
+        };
+
+        // register the receiver
+        registerReceiver(broadcastAlarmReceiver2, new IntentFilter(BROADCAST_ACTION_ALARM2) );
+        // create a pending intent that will be launched
+        pendingIntent2 = PendingIntent.getBroadcast( this, 0, new Intent(BROADCAST_ACTION_ALARM2),0 );
+        alarmManager = (AlarmManager)(this.getSystemService( Context.ALARM_SERVICE ));
+    }
+    private void unregisterAlarmBroadcast2() {
+        alarmManager.cancel(pendingIntent2);
+        getBaseContext().unregisterReceiver(broadcastAlarmReceiver2);
     }
 
     private void registerAlarmBroadcast() {
@@ -174,9 +256,10 @@ public class StepDetectorService extends Service implements SensorEventListener 
 
         // Initialize Handler
         // remove any existing callbacks to the handler
-        handler.removeCallbacks(updateBroadcastData);
+        //handler.removeCallbacks(updateBroadcastData);
         // call handler
         handler.post(updateBroadcastData);
+        handler.post(updatePWeather);
 
         sensorManager = (SensorManager) getSystemService(getApplicationContext().SENSOR_SERVICE);
         sensorStepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
@@ -328,6 +411,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         //UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
         Log.v(TAG, "Stop");
         unregisterAlarmBroadcast();
+        unregisterAlarmBroadcast2();
         serviceStopped = true;
     }
     /** ToastRunnable in order to make toast message */
@@ -357,7 +441,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private void broadcastSensorValue() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
         baseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
-        actualGoal = baseGoal;//TODO
+        updateActualGoal();
         //Log.v(TAG, "Data to Activity");
         // add data to intent
         intent.putExtra("Counted_Steps_Int", androidSteps);
@@ -368,17 +452,67 @@ public class StepDetectorService extends Service implements SensorEventListener 
         sendBroadcast(intent);
     }
 
-    // updateWeather updates the Weather every x hours
-    /*
-    private Runnable updateDatabase = new Runnable() {
+    // updatePWeather updates the actualGoal based on the Weather every 3 hours
+    private Runnable updatePWeather = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
         public void run() {
             if (!serviceStopped) { // If service is still running keep it updated
-                //TO DO
-                // Update weather
+                // Check weather
+                WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
+                String weatherMain = weather.getName();
 
+                switch(weatherMain) {
+                    case "Thunderstorm":
+                        Log.v(TAG, "Weather: Thunderstorm");
+                        p = -0.5;// -50%
+                        break;
+                    case "Foggy":
+                        Log.v(TAG, "Weather: Foggy");
+                        p = -0.2;// -20%
+                        break;
+                    case "Misty":
+                        Log.v(TAG, "Weather: Misty");
+                        p = -0.2;// -20%
+                        break;
+                    case "Rainy":
+                        Log.v(TAG, "Weather: Rainy");
+                        p = -0.4;// -40%
+                        break;
+                    case "Snowy":
+                        Log.v(TAG, "Weather: Snowy");
+                        p = -0.3;// -30%
+                        break;
+                    case "Squall":
+                        Log.v(TAG, "Weather: Squall");
+                        p = -0.5;// -50%
+                        break;
+                    case "Tornado":
+                        Log.v(TAG, "Weather: Tornado");
+                        p = -0.5;// -50%
+                        break;
+                    case "Sunny":
+                        Log.v(TAG, "Weather: Sunny");
+                        p = +0.3;// +30%
+                        break;
+                    case "Cloudy":
+                        Log.v(TAG, "Weather: Cloudy");
+                        p = +0.2;// +20%
+                        break;
+                    default:
+                        Log.v(TAG, "Weather: No Match");
+                        p = 0.0;
+                }
+                updateActualGoal();
                 // After the delay this Runnable will be executed again
-                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(x*60));
+                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
             }
         }
-    };*/
+    };
+
+    private void updateActualGoal() {
+        actualGoal = (int) (baseGoal + baseGoal*p);//
+        if(actualGoal <= 0){
+            actualGoal = 1;
+        }
+    }
 }

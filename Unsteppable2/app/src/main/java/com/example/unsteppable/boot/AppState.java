@@ -13,7 +13,7 @@ public class AppState extends ViewModel {
 
     private AppState(){
         //defaultGoal = db.getLastDefaultGoal();
-        defaultGoal = 6000;
+        defaultGoal = 3000;
         weather = WeatherService.getWeatherFromApi(0,0);//TODO
     }
 

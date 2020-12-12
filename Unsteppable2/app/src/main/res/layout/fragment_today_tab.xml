@@ -21,7 +21,7 @@
         app:wlv_progressValue="40"
         app:wlv_round_rectangle="false"
         app:wlv_shapeType="circle"
-        app:wlv_titleBottom="/6000"
+        app:wlv_titleBottom="/4000"
         app:wlv_titleBottomColor="?attr/colorOnBackground"
         app:wlv_titleCenter="@string/_0"
         app:wlv_titleCenterColor="?attr/colorSecondary"

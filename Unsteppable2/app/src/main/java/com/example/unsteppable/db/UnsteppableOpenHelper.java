@@ -128,13 +128,13 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
             values.put(KEY_ACTUAL_GOAL , actualGoal);
             SQLiteDatabase database = getDatabase(context);
             if(lastDayInNumSteps.equals(lastDayInDashboard)){
-                id = database.update(TABLE_DASHBOARD, values, "day = ?", new String[]{lastDayInDashboard});
+                id = database.update(TABLE_DASHBOARD, values, KEY_DAY + " = ?", new String[]{lastDayInDashboard});
                 Log.v("DATABASE", "Update row in Dashboard - LONG " + id);
             }else{
                 id = database.insert(TABLE_DASHBOARD, null, values);
                 Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
             }
-            database.delete(TABLE_STEPS,"day = ?",new String[]{lastDayInNumSteps});
+            database.delete(TABLE_STEPS,KEY_DAY + " = ?",new String[]{lastDayInNumSteps});
         }
 
     }
@@ -208,7 +208,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            steps = cursor.getInt(cursor.getColumnIndex("steps"));
+            steps = cursor.getInt(cursor.getColumnIndex(KEY_STEPS));
             cursor.moveToNext();
         }
         cursor.close();
@@ -227,7 +227,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            baseGoal = cursor.getInt(cursor.getColumnIndex("baseGoal"));
+            baseGoal = cursor.getInt(cursor.getColumnIndex(KEY_BASE_GOAL));
             cursor.moveToNext();
         }
         cursor.close();
@@ -246,7 +246,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            actualGoal = cursor.getInt(cursor.getColumnIndex("actualGoal"));
+            actualGoal = cursor.getInt(cursor.getColumnIndex(KEY_ACTUAL_GOAL));
             cursor.moveToNext();
         }
         cursor.close();
@@ -265,7 +265,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            reached = cursor.getInt(cursor.getColumnIndex("reached"));
+            reached = cursor.getInt(cursor.getColumnIndex(KEY_REACHED));
             cursor.moveToNext();
         }
         cursor.close();
@@ -281,7 +281,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            day = cursor.getString(cursor.getColumnIndex("day"));
+            day = cursor.getString(cursor.getColumnIndex(KEY_DAY));
             cursor.moveToNext();
         }
         cursor.close();
@@ -297,7 +297,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         // iterate over returned elements
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            day = cursor.getString(cursor.getColumnIndex("day"));
+            day = cursor.getString(cursor.getColumnIndex(KEY_DAY));
             cursor.moveToNext();
         }
         cursor.close();
@@ -356,7 +356,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.remove(KEY_STEPS);
         values.remove(KEY_REACHED);
         values.put(KEY_DAY, day_m_3);
-        values.put(KEY_STEPS, 2000);
+        values.put(KEY_STEPS, 200);
         values.put(KEY_REACHED, 0);
         id = db.insert(TABLE_DASHBOARD, null, values);
         Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
