@@ -162,7 +162,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                     String message = "";
                     if(daysReached > 3){
                         message = "This week went very well, you're really unstoppable! \n" +
-                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ (int) meanSteps
+                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ ((int) meanSteps)
                                 + ". Why don't you challenge yourself increasing your daily goal?";
                     }else{
                         message = "This week didn't go so well, don't worry you can do better in the next one, " +
@@ -171,7 +171,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         if(daysReached >1) {
                             message += "s";
                         }
-                        message  += (" your daily goal, your steps mean is: "+ meanSteps
+                        message  += (" your daily goal, your steps mean is: "+ ((int) meanSteps)
                         + ". There is no shame on decrease your daily goal: “If you concentrate on small, manageable steps you can cross unimaginable distances.”\n" +
                                 "― Shaun Hick");
                     }

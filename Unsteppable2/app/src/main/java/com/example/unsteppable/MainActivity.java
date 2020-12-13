@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -31,6 +32,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity{
 
@@ -39,8 +43,18 @@ public class MainActivity extends AppCompatActivity{
     private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 46;
-    private static final int REQUEST_READ_EXTERNAL_STORAGE = 47;
-    private static final int REQUEST_RECEIVE_BOOT_COMPLETED = 55;
+    private static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 47;
+    private static final int REQUEST_RECEIVE_BOOT_COMPLETED_PERMISSION = 55;
+
+    private static final int MULTIPLE_PERMISSIONS = 10;
+
+    String[] permissions = new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.ACTIVITY_RECOGNITION,
+            Manifest.permission.FOREGROUND_SERVICE,
+            Manifest.permission.RECEIVE_BOOT_COMPLETED
+    };
 
     private AppBarConfiguration mAppBarConfiguration;
     public static final String CHANNEL_ID = "ServiceStepDetectorChannel";
@@ -57,13 +71,15 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
+        /*
         getWriteExternalStorage();
         getReadExternalStorage();
 
         // Ask for activity recognition permission
         if (runningQOrLater) {
             getActivity();
-        }
+        }*/
+        checkPermissions();
         backgroundService = BackgroundServiceHelper.getInstance();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -183,7 +199,7 @@ public class MainActivity extends AppCompatActivity{
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]
                             {Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_READ_EXTERNAL_STORAGE);
+                    REQUEST_READ_EXTERNAL_STORAGE_PERMISSION);
         }
     }
 
@@ -194,7 +210,7 @@ public class MainActivity extends AppCompatActivity{
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]
                             {Manifest.permission.RECEIVE_BOOT_COMPLETED},
-                    REQUEST_RECEIVE_BOOT_COMPLETED);
+                    REQUEST_RECEIVE_BOOT_COMPLETED_PERMISSION);
         }
     }
 
@@ -245,7 +261,7 @@ public class MainActivity extends AppCompatActivity{
                             Toast.LENGTH_SHORT).show();
                 }
 
-            case REQUEST_RECEIVE_BOOT_COMPLETED:
+            case REQUEST_RECEIVE_BOOT_COMPLETED_PERMISSION:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -256,7 +272,7 @@ public class MainActivity extends AppCompatActivity{
                             Toast.LENGTH_SHORT).show();
                 }
 
-            case REQUEST_READ_EXTERNAL_STORAGE:
+            case REQUEST_READ_EXTERNAL_STORAGE_PERMISSION:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -268,6 +284,22 @@ public class MainActivity extends AppCompatActivity{
                 }
 
         }
+    }
+
+    private  boolean checkPermissions() {
+        int result;
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String p:permissions) {
+            result = ContextCompat.checkSelfPermission(getApplicationContext(),p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p);
+            }
+        }
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),MULTIPLE_PERMISSIONS );
+            return false;
+        }
+        return true;
     }
 
 }
