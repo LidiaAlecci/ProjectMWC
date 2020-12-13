@@ -289,6 +289,26 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         return day;
     }
 
+    public static String getAllBadges(Context context){
+        String badges = "";
+        // Get the readable database
+        SQLiteDatabase database = getDatabase(context);
+
+        Cursor cursor = database.rawQuery("SELECT * FROM " + TABLE_BADGES, null);
+
+        cursor.moveToFirst();
+        for (int index=0; index < cursor.getCount(); index++){
+            badges += cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION));
+            badges += "\n";
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        database.close();
+        return badges;
+
+    }
+
     public static String getLastDayFromNumSteps(Context context){
         String day = null;
         // Get the readable database

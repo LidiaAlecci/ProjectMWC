@@ -1,6 +1,7 @@
 package com.example.unsteppable.ui.gallery;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,24 +13,35 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.anychart.charts.Cartesian;
 import com.example.unsteppable.R;
+import com.example.unsteppable.db.UnsteppableOpenHelper;
+
+import java.util.Calendar;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class GalleryFragment extends Fragment {
 
     private GalleryViewModel galleryViewModel;
+    private TextView badges;
+    Calendar cal = Calendar.getInstance();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         galleryViewModel =
                 ViewModelProviders.of(this).get(GalleryViewModel.class);
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
-        final TextView textView = root.findViewById(R.id.text_gallery);
+        /*final TextView textView = root.findViewById(R.id.text_gallery);
         galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
             }
-        });
+        });*/
+
+        badges = root.findViewById(R.id.showBadges);
+        badges.setText(UnsteppableOpenHelper.getAllBadges(getContext()));
         return root;
     }
 }
