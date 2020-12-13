@@ -55,7 +55,6 @@ public class TodayTabFragment extends Fragment {
             mWaveLoad.setProgressValue(countedStep*100/actualGoal);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
             mWaveLoad.setBottomTitle(String.valueOf(actualGoal));
-            //Log.d("BROADCAST in TodayTabFragment: getProgressValue", String.valueOf(mWaveLoad.getProgressValue()));
         }
     };
 
@@ -77,6 +76,7 @@ public class TodayTabFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_today_tab, container, false);
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
+
         // BROADCAST
         this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION)); // BROADCAST
 
@@ -108,8 +108,6 @@ public class TodayTabFragment extends Fragment {
             WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
             weatherImage.setImageResource(weather.getIcon());
             weatherText.setText(weather.getName());
-            //Log.v("TODAY_TAB_FRAGMENT", "Try to updateWeather: " + weather.getName());
-            // After the delay this Runnable will be executed again
             handler.postDelayed(this, TimeUnit.MINUTES.toMillis(120));
         }
     };

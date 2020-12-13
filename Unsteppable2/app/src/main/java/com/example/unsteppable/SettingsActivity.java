@@ -35,6 +35,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_left);
         }
     }
 
@@ -47,11 +48,9 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         switch (theme) {
             case "Light":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                recreate();
                 break;
             case "Dark":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                recreate();
                 break;
         }
     }
