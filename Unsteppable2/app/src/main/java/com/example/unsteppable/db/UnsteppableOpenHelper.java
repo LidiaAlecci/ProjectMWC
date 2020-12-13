@@ -94,7 +94,6 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_DESCRIPTION, description);
         SQLiteDatabase database = getDatabase(context);
         long id = database.insert(TABLE_BADGES, null, values);
-        Log.v(TAG, "insertBadges() - Id: " + id);
     }
 
     public static void insertSingleStep(Context context, String timestamp, String day, String hour){
@@ -104,15 +103,12 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_HOUR, hour);
         SQLiteDatabase database = getDatabase(context);
         long id = database.insert(TABLE_STEPS, null, values);
-        Log.v(TAG, "insertSingleStep() - Id: " + id);
     }
 
     public static void insertDayReport(Context context, Integer baseGoal, Integer actualGoal){
         long id;
         String lastDayInDashboard = getLastDayFromDashboard(context);
-        Log.d(TAG, "value of lastDayInDashboard: " + lastDayInDashboard);
         String lastDayInNumSteps = getLastDayFromNumSteps(context);
-        Log.d(TAG, "value of lastDayInNumSteps: " + lastDayInNumSteps);
         String[] currentDayAndDate = getCurrentDayAndDate();
         if(lastDayInNumSteps != null && !currentDayAndDate[0].equals(lastDayInNumSteps)){
             ContentValues values = new ContentValues();
@@ -129,10 +125,8 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
             SQLiteDatabase database = getDatabase(context);
             if(lastDayInNumSteps.equals(lastDayInDashboard)){
                 id = database.update(TABLE_DASHBOARD, values, KEY_DAY + " = ?", new String[]{lastDayInDashboard});
-                Log.v("DATABASE", "Update row in Dashboard - LONG " + id);
             }else{
                 id = database.insert(TABLE_DASHBOARD, null, values);
-                Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
             }
             database.delete(TABLE_STEPS,KEY_DAY + " = ?",new String[]{lastDayInNumSteps});
         }
@@ -193,7 +187,6 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         database.close();
 
         Integer numSteps = steps.size();
-        Log.d("STORED STEPS TODAY: ", String.valueOf(numSteps));
         return numSteps;
     }
 
@@ -362,15 +355,15 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_ACTUAL_GOAL , 1000);
         values.put(KEY_STEPS, 1527);
         values.put(KEY_REACHED, 1);
-        long id = db.insert(TABLE_DASHBOARD, null, values);
-        Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
+        db.insert(TABLE_DASHBOARD, null, values);
+
         // values in day_m_2
         values.remove(KEY_DAY);
         values.remove(KEY_STEPS);
         values.put(KEY_DAY, day_m_2);
         values.put(KEY_STEPS, 1111);
-        id = db.insert(TABLE_DASHBOARD, null, values);
-        Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
+        db.insert(TABLE_DASHBOARD, null, values);
+
         // values in day_m_3
         values.remove(KEY_DAY);
         values.remove(KEY_STEPS);
@@ -378,8 +371,8 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_DAY, day_m_3);
         values.put(KEY_STEPS, 200);
         values.put(KEY_REACHED, 0);
-        id = db.insert(TABLE_DASHBOARD, null, values);
-        Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
+        db.insert(TABLE_DASHBOARD, null, values);
+
         // values in day_m_4
         values.remove(KEY_DAY);
         values.remove(KEY_STEPS);
@@ -387,8 +380,8 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_DAY, day_m_4);
         values.put(KEY_STEPS, 700);
         values.put(KEY_REACHED, 1);
-        id = db.insert(TABLE_DASHBOARD, null, values);
-        Log.v("DATABASE", "Insert row in Dashboard - LONG " + id);
+        db.insert(TABLE_DASHBOARD, null, values);
+
         // Insert some badges
         values.clear();
         values.put(KEY_TIMESTAMP, "");
@@ -397,22 +390,19 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_TYPE, "1");
         values.put(KEY_NAME, "Daily goal reached!");
         values.put(KEY_DESCRIPTION, "You reach your daily goal");
-        id = db.insert(TABLE_BADGES, null, values);
-        Log.v(TAG, "insertBadges() - Id: " + id);
+        db.insert(TABLE_BADGES, null, values);
 
         values.remove(KEY_DAY);
         values.remove(KEY_HOUR);
         values.put(KEY_DAY, day_m_2);
         values.put(KEY_HOUR, "17");
-        id = db.insert(TABLE_BADGES, null, values);
-        Log.v(TAG, "insertBadges() - Id: " + id);
+        db.insert(TABLE_BADGES, null, values);
 
         values.remove(KEY_DAY);
         values.remove(KEY_HOUR);
         values.put(KEY_DAY, day_m_3);
         values.put(KEY_HOUR, "23");
-        id = db.insert(TABLE_BADGES, null, values);
-        Log.v(TAG, "insertBadges() - Id: " + id);
+        db.insert(TABLE_BADGES, null, values);
 
         values.remove(KEY_DESCRIPTION);
         values.remove(KEY_NAME);
@@ -422,8 +412,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_TYPE, "3");
         values.put(KEY_NAME, "Daily goal reached in all days in the previous week, well done!");
         values.put(KEY_DESCRIPTION, "You reach your daily goal for all days in the previous week, ad maiora semper!");
-        id = db.insert(TABLE_BADGES, null, values);
-        Log.v(TAG, "insertBadges() - Id: " + id);
+        db.insert(TABLE_BADGES, null, values);
 
         values.remove(KEY_DESCRIPTION);
         values.remove(KEY_NAME);
@@ -431,7 +420,6 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_TYPE, "3");
         values.put(KEY_NAME, "Daily goal reached 3 days in a row!");
         values.put(KEY_DESCRIPTION, "You reach your daily goal in the last three days, keep going!");
-        id = db.insert(TABLE_BADGES, null, values);
-        Log.v(TAG, "insertBadges() - Id: " + id);
+        db.insert(TABLE_BADGES, null, values);
     }
 }

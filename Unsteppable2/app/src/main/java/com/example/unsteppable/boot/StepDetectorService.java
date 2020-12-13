@@ -20,6 +20,7 @@ import android.icu.util.Calendar;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
@@ -45,7 +46,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     Sensor sensorStepDetector;
     private static final String TAG = "STEP_SERVICE";
     private UnsteppableOpenHelper databaseOpenHelper = null;
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(Looper.myLooper());
     private Notification notification = null;
     int appIcon = R.drawable.ic_launcher_foreground;
     int badgeIcon = R.drawable.ic_trophy;
@@ -85,7 +86,14 @@ public class StepDetectorService extends Service implements SensorEventListener 
         day = getCurrentDay();
         hour = String.valueOf(Calendar.getInstance().get(Calendar.HOUR));
         // get, if any, the steps already register in the db
-        //String currentDay = getCurrentDay();
+        checkValuesInDb();
+        registerBroadcasts();
+        createNotification(androidSteps);
+        UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
+        broadcastSensorValue();
+    }
+
+    private void checkValuesInDb(){
         androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),day);
         int baseGoalDB = UnsteppableOpenHelper.getBaseGoalByDate(getBaseContext(),day);
         int actualGoalDB =  UnsteppableOpenHelper.getActualGoalByDate(getBaseContext(),day);
@@ -95,13 +103,16 @@ public class StepDetectorService extends Service implements SensorEventListener 
         if(baseGoalDB != 0){
             baseGoal = baseGoalDB;
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void registerBroadcasts(){
         intent = new Intent(BROADCAST_ACTION);
         //Register AlarmManager Broadcast receive to save steps at midnight.
         calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0); // alarm hour
         calendar.set(Calendar.MINUTE, 0); // alarm minute
         calendar.set(Calendar.SECOND, 0); // alarm second
-        //Log.v("ALARM Broadcast", "calendar: " + String.valueOf(calendar.getTime()));
         long intendedTime = calendar.getTimeInMillis();
         registerAlarmBroadcast();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent);
@@ -110,10 +121,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
         intendedTime = calendar.getTimeInMillis();
         registerAlarmBroadcast2();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent2);
-
-        createNotification(androidSteps);
-        UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
-        broadcastSensorValue();
     }
 
     // utility to have current day and the timestamp in the right format
@@ -126,104 +133,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
         return currentDay;
     }
 
-    private void registerAlarmBroadcast2() {
-        Log.i(TAG, "Going to register Intent.RegisterAlarmBroadcast2");
-        //This will be call when alarm time will reached.
-        final Context t = this;
-        broadcastAlarmReceiver2 = new BroadcastReceiver() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.i(TAG,"BroadcastReceiver2::OnReceive()");
-                if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
-                    Intent notificationIntent = new Intent(t, SettingsActivity.class);
-                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    PendingIntent pendingIntentNotification = PendingIntent.getActivity(t, 0, notificationIntent, 0);
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(t, CHANNEL_ID)
-                            .setSmallIcon(appIcon)
-                            .setContentTitle("Weekly report")
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            // Set the intent that will fire when the user taps the notification
-                            .setContentIntent(pendingIntentNotification)
-                            .setAutoCancel(true);
-                    Calendar calendar = Calendar.getInstance();
-                    String day;
-                    int daysReached = 0;
-                    double meanSteps = 0.0;
-                    for(int i = 0; i<7; i++){
-                        calendar.add(Calendar.DAY_OF_YEAR, -1);
-                        day = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
-                        meanSteps = meanSteps + UnsteppableOpenHelper.getStepsFromDashboardByDate(t,day);
-                        if(UnsteppableOpenHelper.getReachedByDate(t,day)){
-                            daysReached++;
-                        }
-                    }
-                    meanSteps = meanSteps/7;
-                    String message = "";
-                    if(daysReached > 3){
-                        message = "This week went very well, you're really unstoppable! \n" +
-                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ ((int) meanSteps)
-                                + ". Why don't you challenge yourself increasing your daily goal?";
-                    }else{
-                        message = "This week didn't go so well, don't worry you can do better in the next one, " +
-                                "there will always be a new opportunity to prove that you're unstoppable! \n" +
-                                "You reached "+ daysReached + " time";
-                        if(daysReached >1) {
-                            message += "s";
-                        }
-                        message  += (" your daily goal, your steps mean is: "+ ((int) meanSteps)
-                        + ". There is no shame on decrease your daily goal: “If you concentrate on small, manageable steps you can cross unimaginable distances.”\n" +
-                                "― Shaun Hick");
-                    }
-                    builder.setContentText(message)
-                            .setStyle(new NotificationCompat.BigTextStyle()
-                                    .bigText(message));
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(t);
-                    // notificationId is a unique int for each notification that you must define
-                    notificationManager.notify(4, builder.build());
-                }
-
-            }
-        };
-
-        // register the receiver
-        registerReceiver(broadcastAlarmReceiver2, new IntentFilter(BROADCAST_ACTION_ALARM2) );
-        // create a pending intent that will be launched
-        pendingIntent2 = PendingIntent.getBroadcast( this, 0, new Intent(BROADCAST_ACTION_ALARM2),0 );
-        alarmManager = (AlarmManager)(this.getSystemService( Context.ALARM_SERVICE ));
-    }
-    private void unregisterAlarmBroadcast2() {
-        alarmManager.cancel(pendingIntent2);
-        getBaseContext().unregisterReceiver(broadcastAlarmReceiver2);
-    }
-
-    private void registerAlarmBroadcast() {
-        Log.i(TAG, "Going to register Intent.RegisterAlarmBroadcast");
-
-        //This will be call when alarm time will reached.
-        broadcastAlarmReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.i(TAG,"BroadcastReceiver::OnReceive()");
-                // Insert the data in the database
-                UnsteppableOpenHelper.insertDayReport(context, baseGoal, actualGoal);
-                if(!getCurrentDay().equals(day)){
-                    restart();
-                }
-            }
-        };
-
-        // register the receiver
-        registerReceiver(broadcastAlarmReceiver, new IntentFilter(BROADCAST_ACTION_ALARM) );
-        // create a pending intent that will be launched
-        pendingIntent = PendingIntent.getBroadcast( this, 0, new Intent(BROADCAST_ACTION_ALARM),0 );
-        alarmManager = (AlarmManager)(this.getSystemService( Context.ALARM_SERVICE ));
-    }
-    private void unregisterAlarmBroadcast() {
-        alarmManager.cancel(pendingIntent);
-        getBaseContext().unregisterReceiver(broadcastAlarmReceiver);
-    }
-
     private void restart() {
         androidSteps = 0;
         createNotification(0);
@@ -233,8 +142,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
     public void createNotification(int steps){
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        //Log.v(TAG, "createNotification with " + steps + " steps");
-
 
         notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Unsteppable is running")
@@ -291,12 +198,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
             case Sensor.TYPE_STEP_DETECTOR:
                 // Calculate the number of steps
                 androidSteps += 1;
-                Log.v(TAG, "Num.steps: " + String.valueOf(androidSteps));
-                /*
-                if(androidSteps != 0) { // It's not the initialize phase
-                    // Timestamp
 
-                }*/
                 long timeInMillis = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
                 updateTimeStamp(timeInMillis);
                 // Insert the data in the database
@@ -427,35 +329,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
         }
     }
 
-    // updateBroadcastData in order to choose the delay and not update every time
-    private Runnable updateBroadcastData = new Runnable() {
-        @RequiresApi(api = Build.VERSION_CODES.N)
-        public void run() {
-            if (!serviceStopped) { // If service is still running keep it updated
-                broadcastSensorValue();
-                // After the delay this Runnable will be executed again
-                handler.postDelayed(this, 1000);
-            }
-        }
-    };
-
-    /** Add data to the intent and send broadcast */
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private void broadcastSensorValue() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-        int newBaseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
-        updateActualGoal(newBaseGoal != baseGoal);
-        baseGoal = newBaseGoal;
-        //Log.v(TAG, "Data to Activity");
-        // add data to intent
-        intent.putExtra("Counted_Steps_Int", androidSteps);
-        intent.putExtra("Counted_Steps", String.valueOf(androidSteps));
-        intent.putExtra("Base_Goal_Int", baseGoal);
-        intent.putExtra("Actual_Goal_Int", actualGoal);
-        // call sendBroadcast with the intent: sends a message to whoever is registered
-        sendBroadcast(intent);
-    }
-
     // updatePWeather updates the actualGoal based on the Weather every 3 hours
     private Runnable updatePWeather = new Runnable() {
 
@@ -523,5 +396,126 @@ public class StepDetectorService extends Service implements SensorEventListener 
         if(actualGoalChanged && androidSteps >= actualGoal){
             checkGoal(true);
         }
+    }
+    /* BROADCAST */
+    // updateBroadcastData in order to choose the delay and not update every time
+    private Runnable updateBroadcastData = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public void run() {
+            if (!serviceStopped) { // If service is still running keep it updated
+                broadcastSensorValue();
+                // After the delay this Runnable will be executed again
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
+    /** Add data to the intent and send broadcast */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void broadcastSensorValue() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        int newBaseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
+        updateActualGoal(newBaseGoal != baseGoal);
+        baseGoal = newBaseGoal;
+        // add data to intent
+        intent.putExtra("Counted_Steps_Int", androidSteps);
+        intent.putExtra("Counted_Steps", String.valueOf(androidSteps));
+        intent.putExtra("Base_Goal_Int", baseGoal);
+        intent.putExtra("Actual_Goal_Int", actualGoal);
+        // call sendBroadcast with the intent: sends a message to whoever is registered
+        sendBroadcast(intent);
+    }
+
+    private void registerAlarmBroadcast2() {
+        //This will be call when alarm time will reached.
+        final Context t = this;
+        broadcastAlarmReceiver2 = new BroadcastReceiver() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
+                    Intent notificationIntent = new Intent(t, SettingsActivity.class);
+                    notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    PendingIntent pendingIntentNotification = PendingIntent.getActivity(t, 0, notificationIntent, 0);
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(t, CHANNEL_ID)
+                            .setSmallIcon(appIcon)
+                            .setContentTitle("Weekly report")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            // Set the intent that will fire when the user taps the notification
+                            .setContentIntent(pendingIntentNotification)
+                            .setAutoCancel(true);
+                    Calendar calendar = Calendar.getInstance();
+                    String day;
+                    int daysReached = 0;
+                    double meanSteps = 0.0;
+                    for(int i = 0; i<7; i++){
+                        calendar.add(Calendar.DAY_OF_YEAR, -1);
+                        day = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
+                        meanSteps = meanSteps + UnsteppableOpenHelper.getStepsFromDashboardByDate(t,day);
+                        if(UnsteppableOpenHelper.getReachedByDate(t,day)){
+                            daysReached++;
+                        }
+                    }
+                    meanSteps = meanSteps/7;
+                    String message = "";
+                    if(daysReached > 3){
+                        message = "This week went very well, you're really unstoppable! \n" +
+                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ ((int) meanSteps)
+                                + ". Why don't you challenge yourself increasing your daily goal?";
+                    }else{
+                        message = "This week didn't go so well, don't worry you can do better in the next one, " +
+                                "there will always be a new opportunity to prove that you're unstoppable! \n" +
+                                "You reached "+ daysReached + " time";
+                        if(daysReached >1) {
+                            message += "s";
+                        }
+                        message  += (" your daily goal, your steps mean is: "+ ((int) meanSteps)
+                                + ". There is no shame on decrease your daily goal: “If you concentrate on small, manageable steps you can cross unimaginable distances.”\n" +
+                                "― Shaun Hick");
+                    }
+                    builder.setContentText(message)
+                            .setStyle(new NotificationCompat.BigTextStyle()
+                                    .bigText(message));
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(t);
+                    // notificationId is a unique int for each notification that you must define
+                    notificationManager.notify(4, builder.build());
+                }
+
+            }
+        };
+
+        // register the receiver
+        registerReceiver(broadcastAlarmReceiver2, new IntentFilter(BROADCAST_ACTION_ALARM2) );
+        // create a pending intent that will be launched
+        pendingIntent2 = PendingIntent.getBroadcast( this, 0, new Intent(BROADCAST_ACTION_ALARM2),0 );
+        alarmManager = (AlarmManager)(this.getSystemService( Context.ALARM_SERVICE ));
+    }
+    private void unregisterAlarmBroadcast2() {
+        alarmManager.cancel(pendingIntent2);
+        getBaseContext().unregisterReceiver(broadcastAlarmReceiver2);
+    }
+
+    private void registerAlarmBroadcast() {
+
+        //This will be call when alarm time will reached.
+        broadcastAlarmReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Insert the data in the database
+                UnsteppableOpenHelper.insertDayReport(context, baseGoal, actualGoal);
+                if(!getCurrentDay().equals(day)){
+                    restart();
+                }
+            }
+        };
+
+        // register the receiver
+        registerReceiver(broadcastAlarmReceiver, new IntentFilter(BROADCAST_ACTION_ALARM) );
+        // create a pending intent that will be launched
+        pendingIntent = PendingIntent.getBroadcast( this, 0, new Intent(BROADCAST_ACTION_ALARM),0 );
+        alarmManager = (AlarmManager)(this.getSystemService( Context.ALARM_SERVICE ));
+    }
+    private void unregisterAlarmBroadcast() {
+        alarmManager.cancel(pendingIntent);
+        getBaseContext().unregisterReceiver(broadcastAlarmReceiver);
     }
 }

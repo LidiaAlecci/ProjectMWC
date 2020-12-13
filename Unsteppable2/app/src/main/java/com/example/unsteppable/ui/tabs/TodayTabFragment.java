@@ -35,8 +35,6 @@ import me.itangqi.waveloadingview.WaveLoadingView;
 public class TodayTabFragment extends Fragment {
     private WaveLoadingView mWaveLoad;
 
-    /* BROADCAST STUFF */
-
     private int countedStep = 0;
     private int baseGoal = 3000;
     private int actualGoal = 3000;
@@ -51,14 +49,11 @@ public class TodayTabFragment extends Fragment {
             countedStep = intent.getIntExtra("Counted_Steps_Int", countedStep);//intent.getStringExtra("Counted_Step");
             baseGoal = intent.getIntExtra("Base_Goal_Int", baseGoal);
             actualGoal = intent.getIntExtra("Actual_Goal_Int", actualGoal);
-            //Log.d("BROADCAST in TodayTabFragment", String.valueOf(countedStep));
             mWaveLoad.setProgressValue(countedStep*100/actualGoal);
             mWaveLoad.setCenterTitle(String.valueOf(countedStep));
             mWaveLoad.setBottomTitle(String.valueOf(actualGoal));
         }
     };
-
-    /* END BROADCAST STUFF */
 
     public static TodayTabFragment newInstance() {
 
@@ -84,10 +79,8 @@ public class TodayTabFragment extends Fragment {
         Date cDate = new Date();
         String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
         countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
-        Log.d("STORED STEPS TODAY", "countedStep " + String.valueOf(countedStep));
         mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
-        Log.d("STORED STEPS TODAY", "countedStep " + mWaveLoad.getCenterTitle());
         WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
 
         weatherImage = root.findViewById(R.id.weather_image);

@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity{
     private boolean runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -71,15 +71,8 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
-        /*
-        getWriteExternalStorage();
-        getReadExternalStorage();
-
-        // Ask for activity recognition permission
-        if (runningQOrLater) {
-            getActivity();
-        }*/
         checkPermissions();
+
         backgroundService = BackgroundServiceHelper.getInstance();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -104,10 +97,8 @@ public class MainActivity extends AppCompatActivity{
         WeatherService weatherService = WeatherService.getInstance();
         weatherService.setActivity(this);
 
-        /** START THINGS FOR SERVICE **/
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
-        /** END THINGS FOR SERVICE **/
 
     }
 

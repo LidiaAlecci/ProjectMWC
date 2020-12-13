@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 
+import androidx.annotation.RequiresApi;
+
 public class BackgroundServiceHelper {
     String countedStep;
     private static final String TAG = "SENSOR_EVENT";
@@ -30,9 +32,6 @@ public class BackgroundServiceHelper {
         public void onReceive(Context context, Intent intent) {
             // intent is holding data to display
             countedStep = intent.getStringExtra("Counted_Steps");
-            //Log.d(TAG, String.valueOf(countedStep));
-
-            //stepCounterTxV.setText('"' + String.valueOf(countedStep) + '"' + " Steps Detected");
         }
     };
 
@@ -49,10 +48,9 @@ public class BackgroundServiceHelper {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void startService(Context context, Context baseContext){
         context.registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION));
-        //stepCountTxV = (TextView)findViewById(R.id.stepCountTxV);
-        //stepCounterTxV = (TextView)findViewById(R.id.stepCountTxV);
         context.startForegroundService(new Intent(baseContext, StepDetectorService.class));
     }
 
