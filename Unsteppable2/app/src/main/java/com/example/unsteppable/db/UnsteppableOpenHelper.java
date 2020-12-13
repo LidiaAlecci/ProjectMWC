@@ -291,6 +291,8 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
+            badges += cursor.getString((cursor.getColumnIndex(KEY_DAY)));
+            badges += ": ";
             badges += cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION));
             badges += "\n";
             cursor.moveToNext();
