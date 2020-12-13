@@ -13,7 +13,10 @@ import androidx.annotation.RequiresApi;
 
 import com.example.unsteppable.boot.AppState;
 
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -282,19 +285,18 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         return day;
     }
 
-    public static String getAllBadges(Context context){
-        String badges = "";
+    public static ArrayList<Badge> getAllBadges(Context context){
+        ArrayList<Badge> badges = new ArrayList<Badge>();
         // Get the readable database
         SQLiteDatabase database = getDatabase(context);
-
+        String date = "", description="";
         Cursor cursor = database.rawQuery("SELECT * FROM " + TABLE_BADGES, null);
 
         cursor.moveToFirst();
         for (int index=0; index < cursor.getCount(); index++){
-            badges += cursor.getString((cursor.getColumnIndex(KEY_DAY)));
-            badges += ": ";
-            badges += cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION));
-            badges += "\n";
+            date = cursor.getString((cursor.getColumnIndex(KEY_DAY)));
+            description = cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION));
+            badges.add(new Badge(date, description));
             cursor.moveToNext();
         }
 
@@ -391,7 +393,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_HOUR, "20");
         values.put(KEY_TYPE, "1");
         values.put(KEY_NAME, "Daily goal reached!");
-        values.put(KEY_DESCRIPTION, "You reach your daily goal");
+        values.put(KEY_DESCRIPTION, "You reached your daily goal");
         db.insert(TABLE_BADGES, null, values);
 
         values.remove(KEY_DAY);
@@ -413,7 +415,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.put(KEY_DAY, day_m_4);
         values.put(KEY_TYPE, "3");
         values.put(KEY_NAME, "Daily goal reached in all days in the previous week, well done!");
-        values.put(KEY_DESCRIPTION, "You reach your daily goal for all days in the previous week, ad maiora semper!");
+        values.put(KEY_DESCRIPTION, "You reached your daily goal for a week!");
         db.insert(TABLE_BADGES, null, values);
 
         values.remove(KEY_DESCRIPTION);
@@ -421,7 +423,25 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         values.remove(KEY_TYPE);
         values.put(KEY_TYPE, "3");
         values.put(KEY_NAME, "Daily goal reached 3 days in a row!");
-        values.put(KEY_DESCRIPTION, "You reach your daily goal in the last three days, keep going!");
+        values.put(KEY_DESCRIPTION, "You reached your daily goal for three days, keep going!");
         db.insert(TABLE_BADGES, null, values);
+    }
+
+    public static class Badge {
+        public String day;
+        public String description;
+
+        public Badge(String day, String description){
+            this.day = day;
+            this.description = description;
+        }
+
+        public String getDay(){
+            return day;
+        }
+
+        public String getDescription(){
+            return description;
+        }
     }
 }

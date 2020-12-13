@@ -42,4 +42,5 @@
     <string name="app_theme_option">App theme</string>
     <string name="daily_goal">Daily Goal</string>
     <string name="base_goal">Base daily goal</string>
+    <string name="no_badges">No badges yet!\n Keep going!</string>
 </resources>

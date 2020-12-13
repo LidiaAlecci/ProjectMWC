@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.unsteppable.boot.BackgroundServiceHelper;
 import com.example.unsteppable.boot.WeatherService;
+import com.example.unsteppable.settings.SettingsActivity;
 import com.google.android.material.navigation.NavigationView;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -64,7 +65,8 @@ public class MainActivity extends AppCompatActivity{
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences preferences = PreferenceManager.
+                getDefaultSharedPreferences(getApplicationContext());
         String theme = preferences.getString(getResources().getString(R.string.app_theme_option), "Light");
         setTheme(theme);
         super.onCreate(savedInstanceState);
@@ -91,8 +93,10 @@ public class MainActivity extends AppCompatActivity{
                 .build();
 
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavController navController = Navigation.
+                findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.
+                setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         WeatherService weatherService = WeatherService.getInstance();
         weatherService.setActivity(this);
@@ -287,7 +291,9 @@ public class MainActivity extends AppCompatActivity{
             }
         }
         if (!listPermissionsNeeded.isEmpty()) {
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),MULTIPLE_PERMISSIONS );
+            ActivityCompat.
+                    requestPermissions(this, listPermissionsNeeded.
+                            toArray(new String[listPermissionsNeeded.size()]),MULTIPLE_PERMISSIONS );
             return false;
         }
         return true;

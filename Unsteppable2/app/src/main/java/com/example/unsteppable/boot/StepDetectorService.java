@@ -29,15 +29,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceManager;
 
 import com.example.unsteppable.MainActivity;
-import com.example.unsteppable.SettingsActivity;
+import com.example.unsteppable.settings.SettingsActivity;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -145,7 +143,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
 
         notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Unsteppable is running")
-                .setContentText(steps + " steps done")
+                .setContentText(steps + " steps")
                 .setSmallIcon(appIcon)
                 .setNotificationSilent()
                 .setContentIntent(pendingIntentNotification)
@@ -217,7 +215,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
             PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(badgeIcon)
-                    .setContentTitle("Congrats! You reach your daily goal!")
+                    .setContentTitle("Congrats! You've reachead your daily goal!")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     // Set the intent that will fire when the user taps the notification
                     .setContentIntent(pendingIntentNotification)
@@ -231,17 +229,15 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText("This day is almost over, but why not try to push yourself further?"));
             }else{
-                builder.setContentText("There is still enough time to break your records, change your daily goal!\n" +
-                        "“When you push yourself beyond limits, you discover inner reserves, which you never thought existed earlier.” - Manoj Arora, Dream On ")
+                builder.setContentText("Push your limits! Change your daily goal!\n")
                         .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText("There is still enough time to break your records, change your daily goal!\n" +
-                                        "“When you push yourself beyond limits, you discover inner reserves, which you never thought existed earlier.” - Manoj Arora, Dream On "));
+                                .bigText("Push your limits! Change your daily goal!\n"));
             }
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             // notificationId is a unique int for each notification that you must define
             notificationManager.notify(3, builder.build());
-            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"1", "Daily goal reached!", "You reach your daily goal");
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"1", "Daily goal reached!", "You reached your daily goal");
             checkBadge3days();
             if(dayOfWeek == Calendar.SUNDAY){
                 checkBadgeWeek();
@@ -260,7 +256,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         boolean day_m_1_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_1),
                 day_m_2_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_2);
         if(day_m_1_reached && day_m_2_reached){
-            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"2", "Daily goal reached 3 days in a row!", "You reach your daily goal in the last three days, keep going!");
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"2", "Daily goal reached 3 days in a row!", "You reached your daily goal in the last three days, keep going!");
         }
 
     }
@@ -287,7 +283,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 day_m_5_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_5),
                 day_m_6_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_6);
         if(day_m_1_reached && day_m_2_reached && day_m_3_reached && day_m_4_reached && day_m_5_reached && day_m_6_reached){
-            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"3", "Daily goal reached in all days in the previous week, well done!", "You reach your daily goal for all days in the previous week, ad maiora semper!");
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"3", "Daily goal reached all week, well done!", "You reached your daily goal every day for this week!");
         }
     }
 
@@ -446,31 +442,20 @@ public class StepDetectorService extends Service implements SensorEventListener 
                     Calendar calendar = Calendar.getInstance();
                     String day;
                     int daysReached = 0;
-                    double meanSteps = 0.0;
                     for(int i = 0; i<7; i++){
                         calendar.add(Calendar.DAY_OF_YEAR, -1);
                         day = UnsteppableOpenHelper.getDay(calendar.getTimeInMillis());
-                        meanSteps = meanSteps + UnsteppableOpenHelper.getStepsFromDashboardByDate(t,day);
                         if(UnsteppableOpenHelper.getReachedByDate(t,day)){
                             daysReached++;
                         }
                     }
-                    meanSteps = meanSteps/7;
-                    String message = "";
+                    String message;
                     if(daysReached > 3){
-                        message = "This week went very well, you're really unstoppable! \n" +
-                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ ((int) meanSteps)
-                                + ". Why don't you challenge yourself increasing your daily goal?";
+                        message = "You were unstoppable!"+
+                                "Challenge yourself, change your goal!";
                     }else{
-                        message = "This week didn't go so well, don't worry you can do better in the next one, " +
-                                "there will always be a new opportunity to prove that you're unstoppable! \n" +
-                                "You reached "+ daysReached + " time";
-                        if(daysReached >1) {
-                            message += "s";
-                        }
-                        message  += (" your daily goal, your steps mean is: "+ ((int) meanSteps)
-                                + ". There is no shame on decrease your daily goal: “If you concentrate on small, manageable steps you can cross unimaginable distances.”\n" +
-                                "― Shaun Hick");
+                        message = "This week was tough, next one will be better! " +
+                                "There is no shame in decreasing your daily goal!";
                     }
                     builder.setContentText(message)
                             .setStyle(new NotificationCompat.BigTextStyle()
