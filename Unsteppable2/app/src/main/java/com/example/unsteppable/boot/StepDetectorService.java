@@ -48,7 +48,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private final Handler handler = new Handler();
     private Notification notification = null;
     int appIcon = R.drawable.ic_launcher_foreground;
-    int badgeIcon = R.drawable.ic_launcher_foreground;
+    int badgeIcon = R.drawable.ic_trophy;
     double p = 0.0;// percent of change of actual goal based on weather and base goal
     // Android step counter
     public int androidSteps = 0;
@@ -83,6 +83,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         super.onCreate();
         databaseOpenHelper = UnsteppableOpenHelper.getInstance(getBaseContext());
         day = getCurrentDay();
+        hour = String.valueOf(Calendar.getInstance().get(Calendar.HOUR));
         // get, if any, the steps already register in the db
         //String currentDay = getCurrentDay();
         androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),day);
@@ -161,7 +162,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                     String message = "";
                     if(daysReached > 3){
                         message = "This week went very well, you're really unstoppable! \n" +
-                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ meanSteps
+                                "You reached "+ daysReached + " times your daily goal, your steps mean is: "+ (int) meanSteps
                                 + ". Why don't you challenge yourself increasing your daily goal?";
                     }else{
                         message = "This week didn't go so well, don't worry you can do better in the next one, " +
@@ -301,13 +302,13 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 // Insert the data in the database
                 UnsteppableOpenHelper.insertSingleStep(getBaseContext(), timestamp, day, hour);
                 createNotification(androidSteps);
-                checkGoal();
+                checkGoal(false);
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private void checkGoal(){
-        if (androidSteps == actualGoal){
+    private void checkGoal(boolean actualGoalChanged){
+        if (androidSteps == actualGoal || actualGoalChanged){
             // Create an explicit intent for an Activity in your app
             Intent notificationIntent = new Intent(this, SettingsActivity.class);
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -428,6 +429,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
 
     // updateBroadcastData in order to choose the delay and not update every time
     private Runnable updateBroadcastData = new Runnable() {
+        @RequiresApi(api = Build.VERSION_CODES.N)
         public void run() {
             if (!serviceStopped) { // If service is still running keep it updated
                 broadcastSensorValue();
@@ -438,10 +440,12 @@ public class StepDetectorService extends Service implements SensorEventListener 
     };
 
     /** Add data to the intent and send broadcast */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void broadcastSensorValue() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-        baseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
-        updateActualGoal();
+        int newBaseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
+        updateActualGoal(newBaseGoal != baseGoal);
+        baseGoal = newBaseGoal;
         //Log.v(TAG, "Data to Activity");
         // add data to intent
         intent.putExtra("Counted_Steps_Int", androidSteps);
@@ -454,7 +458,8 @@ public class StepDetectorService extends Service implements SensorEventListener 
 
     // updatePWeather updates the actualGoal based on the Weather every 3 hours
     private Runnable updatePWeather = new Runnable() {
-        @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
         public void run() {
             if (!serviceStopped) { // If service is still running keep it updated
                 // Check weather
@@ -502,17 +507,21 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         Log.v(TAG, "Weather: No Match");
                         p = 0.0;
                 }
-                updateActualGoal();
+                updateActualGoal(p != 0);
                 // After the delay this Runnable will be executed again
                 handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
             }
         }
     };
 
-    private void updateActualGoal() {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void updateActualGoal(boolean actualGoalChanged) {
         actualGoal = (int) (baseGoal + baseGoal*p);//
         if(actualGoal <= 0){
             actualGoal = 1;
+        }
+        if(actualGoalChanged && androidSteps >= actualGoal){
+            checkGoal(true);
         }
     }
 }
