@@ -40,6 +40,7 @@
         android:layout_height="46dp"
         android:layout_marginTop="52dp"
         android:src="@drawable/ic_alert_circle"
+        android:theme="?attr/theme"
         android:contentDescription="@string/weather_icon_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

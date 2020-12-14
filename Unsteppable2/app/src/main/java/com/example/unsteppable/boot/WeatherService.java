@@ -192,16 +192,16 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                         }, Looper.getMainLooper());
             }
         });
-        task.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
-                        observableService.notifyAll(WeatherStatus.valueOf("UNKNOWN"));
-                }}
-
-        });
+//        task.addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                if (e instanceof ResolvableApiException) {
+//                    // Location settings are not satisfied, but this can be fixed
+//                    // by showing the user a dialog.
+//                        observableService.notifyAll(WeatherStatus.valueOf("UNKNOWN"));
+//                }}
+//
+//        });
     }
 
     private class ObservableWeatherService extends Observable{

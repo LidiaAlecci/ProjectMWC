@@ -3,7 +3,7 @@ package com.example.unsteppable.boot;
 import com.example.unsteppable.R;
 
 public enum WeatherStatus{
-        CLEAR("Sunny", R.drawable.ic_sunny),
+        CLEAR("Clear", R.drawable.ic_sunny),
         CLOUDS ("Cloudy",R.drawable.ic_cloudy),
         RAIN("Rainy", R.drawable.ic_rain),
         THUNDERSTORM("Rainy", R.drawable.ic_thunderstorm),
