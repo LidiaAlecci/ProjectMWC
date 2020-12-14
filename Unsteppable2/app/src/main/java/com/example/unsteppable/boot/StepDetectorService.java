@@ -257,11 +257,14 @@ public class StepDetectorService extends Service implements SensorEventListener 
         if(day_m_1_reached && day_m_2_reached){
             String title ="Daily goal reached 3 days in a row!";
             String message ="You reached your daily goal in the last three days, keep going!";
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
                     .setSmallIcon(badgeIcon)
                     .setContentTitle(title)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setContentText(message)
+                    .setContentIntent(pendingIntentNotification)
                     .setStyle(new NotificationCompat.BigTextStyle()
                             .bigText(message))
                     .setAutoCancel(true);
@@ -297,11 +300,14 @@ public class StepDetectorService extends Service implements SensorEventListener 
         if(day_m_1_reached && day_m_2_reached && day_m_3_reached && day_m_4_reached && day_m_5_reached && day_m_6_reached){
             String title ="Daily goal reached all week, well done!";
             String message ="You reached your daily goal every day for this week!";
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
                     .setSmallIcon(badgeIcon)
                     .setContentTitle(title)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setContentText(message)
+                    .setContentIntent(pendingIntentNotification)
                     .setStyle(new NotificationCompat.BigTextStyle()
                             .bigText(message))
                     .setAutoCancel(true);
@@ -418,12 +424,15 @@ public class StepDetectorService extends Service implements SensorEventListener 
         }else{
             title ="Weather is bad, but you can still do some steps!";
         }
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         String message ="Now your daily goal is " + actualGoal +" steps.";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
                 .setSmallIcon(appIcon)
                 .setContentTitle(title)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentText(message)
+                .setContentIntent(pendingIntentNotification)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(message))
                 .setAutoCancel(true);
