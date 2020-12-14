@@ -29,13 +29,15 @@ import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.TimeUnit;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
 
-public class TodayTabFragment extends Fragment {
+public class TodayTabFragment extends Fragment implements Observer {
     private WaveLoadingView mWaveLoad;
-
+    private View root;
     private int countedStep = 0;
     private int baseGoal = 3000;
     private int actualGoal = 3000;
@@ -69,9 +71,11 @@ public class TodayTabFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.fragment_today_tab, container, false);
+        this.root = inflater.inflate(R.layout.fragment_today_tab, container, false);
+        WeatherService.getInstance().register(this);
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
+        WeatherService.getInstance().register(this);
 
         // BROADCAST
         this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION)); // BROADCAST
@@ -82,14 +86,10 @@ public class TodayTabFragment extends Fragment {
         countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
         mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
-        WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
-        Log.v("WEATHER", weather.getName());
+        WeatherService.getInstance().getCurrentWeather();
         weatherImage = root.findViewById(R.id.weather_image);
-        weatherImage.setImageResource(weather.getIcon());
         weatherText = (TextView) root.findViewById(R.id.weather_text);
-        weatherText.setText(weather.getName());
-        //handler.removeCallbacks(updateWeather);
-        handler.post(updateWeather);
+
 
         return root;
 
@@ -98,12 +98,15 @@ public class TodayTabFragment extends Fragment {
     private Runnable updateWeather = new Runnable() {
         @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
         public void run() {
-            // Update weather
-            WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
-            weatherImage.setImageResource(weather.getIcon());
-            weatherText.setText(weather.getName());
             handler.postDelayed(this, TimeUnit.MINUTES.toMillis(120));
         }
     };
 
+    @Override
+    public void update(Observable o, Object arg) {
+        WeatherStatus status = (WeatherStatus) arg;
+        weatherImage.setImageResource(status.getIcon());
+        weatherText.setText(status.getName());
+        handler.post(updateWeather);
+    }
 }

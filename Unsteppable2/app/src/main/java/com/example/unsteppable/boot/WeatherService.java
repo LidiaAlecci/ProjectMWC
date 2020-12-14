@@ -2,26 +2,34 @@ package com.example.unsteppable.boot;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.media.session.MediaSession;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.unsteppable.MainActivity;
+import com.example.unsteppable.ui.tabs.TodayTabFragment;
+import com.google.android.gms.common.data.DataBufferObserver;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.OnTokenCanceledListener;
+import com.google.android.gms.tasks.Task;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,11 +40,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 //Wheather API part
 public final class WeatherService extends AsyncTask<String, Void, String> {
     private static WeatherService instance;
     private AppCompatActivity activity;
+    List<Observer> observerList = new LinkedList();
+    ObservableWeatherService observableService = new ObservableWeatherService();
 
     private WeatherService(){
 
@@ -46,6 +62,10 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         if (instance == null)
                 instance = new WeatherService();
         return instance;
+    }
+
+    public void register(Observer o){
+        observerList.add(o);
     }
     public void setActivity(AppCompatActivity activity){
         this.activity = activity;
@@ -84,7 +104,6 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
 
         return null;
     }
-
     public static WeatherStatus getWeatherFromApi(double latitude, double longitude) {
         String content;
         //String city = "Lugano";
@@ -132,8 +151,11 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
     //LOCATION PART
     public WeatherStatus getCurrentWeather() {
         final LocationRequest locationRequest = new LocationRequest();
+
         final double[] latitude = new double[1];
         final double[] longitude = new double[1];
+        locationRequest.setInterval(10000);
+        locationRequest.setNumUpdates(1);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         LocationServices.getFusedLocationProviderClient(this.activity)
@@ -150,13 +172,20 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                                     locationResult.getLocations().get(latestLocationIndex).getLatitude();
                             longitude[0] =
                                     locationResult.getLocations().get(latestLocationIndex).getLongitude();
-
+                            observableService.notifyAll(WeatherService.getWeatherFromApi(latitude[0], longitude[0]));
                         }
                     }
                 }, Looper.getMainLooper());
 
         return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
     }
-
+    private class ObservableWeatherService extends Observable{
+        public void notifyAll(WeatherStatus status){
+            for (Observer o: observerList
+                 ) {
+                o.update(this, status);
+            }
+        }
+    }
 
 }

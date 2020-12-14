@@ -35,6 +35,8 @@ import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -101,7 +103,6 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.setupWithNavController(navigationView, navController);
         WeatherService weatherService = WeatherService.getInstance();
         weatherService.setActivity(this);
-        weatherService.getCurrentWeather();
 
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
