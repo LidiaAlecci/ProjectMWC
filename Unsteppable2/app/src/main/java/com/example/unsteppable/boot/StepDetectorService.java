@@ -241,7 +241,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
             checkBadge3days();
             if(dayOfWeek == Calendar.SUNDAY){
                 checkBadgeWeek();
-
             }
         }
     }
@@ -360,7 +359,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 // Check weather
                 WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
                 String weatherMain = weather.getName();
-
+                double lastP = p;
                 switch(weatherMain) {
                     case "Thunderstorm":
                         Log.v(TAG, "Weather: Thunderstorm");
@@ -402,7 +401,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         Log.v(TAG, "Weather: No Match");
                         p = 0.0;
                 }
-                updateActualGoal(p != 0);
+                updateActualGoal(lastP != p);
                 // After the delay this Runnable will be executed again
                 handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
             }
