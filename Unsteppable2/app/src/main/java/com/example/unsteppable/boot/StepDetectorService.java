@@ -360,6 +360,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
                 String weatherMain = weather.getName();
                 double lastP = p;
+                boolean sunny = false;
                 switch(weatherMain) {
                     case "Thunderstorm":
                         Log.v(TAG, "Weather: Thunderstorm");
@@ -391,10 +392,12 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         break;
                     case "Sunny":
                         Log.v(TAG, "Weather: Sunny");
+                        sunny = true;
                         p = +0.3;// +30%
                         break;
                     case "Cloudy":
                         Log.v(TAG, "Weather: Cloudy");
+                        sunny = true; //DELETE
                         p = +0.2;// +20%
                         break;
                     default:
@@ -402,11 +405,30 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         p = 0.0;
                 }
                 updateActualGoal(lastP != p);
+                if(sunny){
+                    createNotificationSunny();
+                }
                 // After the delay this Runnable will be executed again
                 handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
             }
         }
     };
+
+    private void createNotificationSunny() {
+        String title ="Hey, it's sunny go for a walk!";
+        String message ="Now your daily goal is " + actualGoal +" steps.";
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
+                .setSmallIcon(appIcon)
+                .setContentTitle(title)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentText(message)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(message))
+                .setAutoCancel(true);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
+        // notificationId is a unique int for each notification that you must define
+        notificationManager.notify(8, builder.build());
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void updateActualGoal(boolean actualGoalChanged) {
