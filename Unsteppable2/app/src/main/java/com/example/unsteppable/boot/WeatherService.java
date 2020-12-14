@@ -164,6 +164,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         locationRequest.setInterval(10000);
         locationRequest.setNumUpdates(1);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(locationRequest);
         SettingsClient client = LocationServices.getSettingsClient(this.activity);
@@ -206,8 +207,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                         // Ignore the error.
                     }
                 }}
-
-        //return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);}
+                
         });
     }
 
