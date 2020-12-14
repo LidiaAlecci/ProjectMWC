@@ -360,7 +360,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
                 String weatherMain = weather.getName();
                 double lastP = p;
-                boolean sunny = false;
                 switch(weatherMain) {
                     case "Thunderstorm":
                         Log.v(TAG, "Weather: Thunderstorm");
@@ -392,7 +391,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         break;
                     case "Sunny":
                         Log.v(TAG, "Weather: Sunny");
-                        sunny = true;
                         p = +0.3;// +30%
                         break;
                     case "Cloudy":
@@ -404,8 +402,8 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         p = 0.0;
                 }
                 updateActualGoal(lastP != p);
-                if(sunny){
-                    createNotificationSunny();
+                if(lastP != p){
+                    createNotificationWeather(p);
                 }
                 // After the delay this Runnable will be executed again
                 handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
@@ -413,8 +411,13 @@ public class StepDetectorService extends Service implements SensorEventListener 
         }
     };
 
-    private void createNotificationSunny() {
-        String title ="Hey, it's sunny, perfect for a walk!";
+    private void createNotificationWeather(double p) {
+        String title;
+        if(false){
+            title ="The weather is good perfect for a walk!";
+        }else{
+            title ="Weather is bad, but you can still do some steps!";
+        }
         String message ="Now your daily goal is " + actualGoal +" steps.";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
                 .setSmallIcon(appIcon)
