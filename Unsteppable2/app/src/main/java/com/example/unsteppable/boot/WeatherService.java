@@ -31,7 +31,6 @@ import java.net.URL;
 public final class WeatherService extends AsyncTask<String, Void, String> {
     private static WeatherService instance;
     private AppCompatActivity activity;
-    private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
 
     private WeatherService(){
 
@@ -124,7 +123,6 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
 
 
     //LOCATION PART
-    @SuppressLint("MissingPermission")
     public WeatherStatus getCurrentWeather() {
         final LocationRequest locationRequest = new LocationRequest();
         final double[] latitude = new double[1];
@@ -157,18 +155,5 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
     }
 
-    private void getLocation(){
-        if (ContextCompat.checkSelfPermission(
-                activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    activity,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE_LOCATION_PERMISSION
-            );
 
-        } else {
-            getCurrentWeather();
-        }
-    }
 }

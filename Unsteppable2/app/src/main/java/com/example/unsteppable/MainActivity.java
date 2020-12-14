@@ -54,7 +54,8 @@ public class MainActivity extends AppCompatActivity{
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.ACTIVITY_RECOGNITION,
             Manifest.permission.FOREGROUND_SERVICE,
-            Manifest.permission.RECEIVE_BOOT_COMPLETED
+            Manifest.permission.RECEIVE_BOOT_COMPLETED,
+            Manifest.permission.ACCESS_FINE_LOCATION
     };
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -100,6 +101,7 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.setupWithNavController(navigationView, navController);
         WeatherService weatherService = WeatherService.getInstance();
         weatherService.setActivity(this);
+        weatherService.getCurrentWeather();
 
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
@@ -209,6 +211,19 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private void getLocation(){
+        if (ContextCompat.checkSelfPermission(
+                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_CODE_LOCATION_PERMISSION
+            );
+
+        }
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -239,6 +254,7 @@ public class MainActivity extends AppCompatActivity{
             case REQUEST_CODE_LOCATION_PERMISSION:
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getLocation();
                 } else {
                     Toast.makeText(this,
                             R.string.permission_denied,

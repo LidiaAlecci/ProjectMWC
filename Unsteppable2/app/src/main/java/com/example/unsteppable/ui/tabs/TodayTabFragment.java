@@ -83,7 +83,7 @@ public class TodayTabFragment extends Fragment {
         mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
         WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
-
+        Log.v("WEATHER", weather.getName());
         weatherImage = root.findViewById(R.id.weather_image);
         weatherImage.setImageResource(weather.getIcon());
         weatherText = (TextView) root.findViewById(R.id.weather_text);
