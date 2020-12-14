@@ -410,8 +410,12 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private void broadcastSensorValue() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
         int newBaseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
-        updateActualGoal(newBaseGoal != baseGoal);
-        baseGoal = newBaseGoal;
+        if(newBaseGoal != baseGoal){
+            baseGoal = newBaseGoal;
+            updateActualGoal(true);
+
+        }
+
         // add data to intent
         intent.putExtra("Counted_Steps_Int", androidSteps);
         intent.putExtra("Counted_Steps", String.valueOf(androidSteps));
