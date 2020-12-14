@@ -397,7 +397,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
                         break;
                     case "Cloudy":
                         Log.v(TAG, "Weather: Cloudy");
-                        sunny = true; //DELETE
                         p = +0.2;// +20%
                         break;
                     default:
