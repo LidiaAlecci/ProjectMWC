@@ -39,6 +39,8 @@
         android:layout_width="97dp"
         android:layout_height="46dp"
         android:layout_marginTop="52dp"
+        android:backgroundTint="?attr/colorPrimary"
+        android:backgroundTintMode="src_atop"
         android:contentDescription="@string/weather_icon_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

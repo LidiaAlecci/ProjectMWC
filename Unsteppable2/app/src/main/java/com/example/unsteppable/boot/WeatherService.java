@@ -1,11 +1,17 @@
 package com.example.unsteppable.boot;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import com.example.unsteppable.MainActivity;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -20,18 +26,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 //Wheather API part
-public final class WeatherService extends AsyncTask<String, Void, String>{
+public final class WeatherService extends AsyncTask<String, Void, String> {
     private static WeatherService instance;
     private AppCompatActivity activity;
-    List<Observer> observerList = new LinkedList();
-    ObservableService observableService = new ObservableService();
-    private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
 
     private WeatherService(){
 
@@ -82,9 +81,12 @@ public final class WeatherService extends AsyncTask<String, Void, String>{
 
     public static WeatherStatus getWeatherFromApi(double latitude, double longitude) {
         String content;
+        //String city = "Lugano";
 
         String apiKey = "e9fcc5721ca04b00b71bebed9a78bae3";
         String apiUrl = "https://api.openweathermap.org/data/2.5/weather?lat="+latitude+"&lon="+longitude+"&appid="+apiKey;
+        //String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey;
+
         WeatherService weather = new WeatherService();
         try {
             //content = weather.execute("https://api.openweathermap.org/data/2.5/weather?q=Lugano&appid=e9fcc5721ca04b00b71bebed9a78bae3").get();
@@ -147,26 +149,11 @@ public final class WeatherService extends AsyncTask<String, Void, String>{
                                     locationResult.getLocations().get(latestLocationIndex).getLongitude();
 
                         }
-                        WeatherStatus weather = WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
-                        observableService.notifyAll(weather);
                     }
                 }, Looper.getMainLooper());
 
         return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
     }
 
-    public void register(Observer observer){
-        this.observerList.add(observer);
-    }
 
-    private class ObservableService extends Observable{
-
-        private void notifyAll(WeatherStatus status){
-            for (Observer o: observerList) {
-                o.update(this, status);
-
-
-            }
-        }
-    }
 }

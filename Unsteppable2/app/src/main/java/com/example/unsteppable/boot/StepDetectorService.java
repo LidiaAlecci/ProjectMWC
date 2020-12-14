@@ -37,12 +37,10 @@ import com.example.unsteppable.settings.SettingsActivity;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-public class StepDetectorService extends Service implements SensorEventListener, Observer {
+public class StepDetectorService extends Service implements SensorEventListener {
     SensorManager sensorManager;
     Sensor sensorStepDetector;
     private static final String TAG = "STEP_SERVICE";
@@ -89,17 +87,10 @@ public class StepDetectorService extends Service implements SensorEventListener,
         checkValuesInDb();
         registerBroadcasts();
         createNotification(androidSteps);
-        WeatherService.getInstance().register(this);
         UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
         broadcastSensorValue();
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        WeatherStatus status = (WeatherStatus) arg;
-
-
-    }
     private void checkValuesInDb(){
         androidSteps = UnsteppableOpenHelper.getStepsByDayFromTab1(getBaseContext(),day);
         int baseGoalDB = UnsteppableOpenHelper.getBaseGoalByDate(getBaseContext(),day);
@@ -423,9 +414,9 @@ public class StepDetectorService extends Service implements SensorEventListener,
     private void createNotificationWeather(double p) {
         String title;
         if(p >=0){
-            title ="The weather is good: perfect for a walk!";
+            title ="The weather is good perfect for a walk!";
         }else{
-            title ="Weather is bad, but you can still take some steps!";
+            title ="Weather is bad, but you can still do some steps!";
         }
         String message ="Now your daily goal is " + actualGoal +" steps.";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
