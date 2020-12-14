@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -46,8 +47,8 @@ public class StepDetectorService extends Service implements SensorEventListener 
     private UnsteppableOpenHelper databaseOpenHelper = null;
     private final Handler handler = new Handler(Looper.myLooper());
     private Notification notification = null;
-    int appIcon = R.drawable.ic_launcher_foreground;
-    int badgeIcon = R.drawable.ic_trophy;
+    int appIcon = R.mipmap.ic_launcher_round;
+    int badgeIcon = R.drawable.ic_trophy_notification;
     double p = 0.0;// percent of change of actual goal based on weather and base goal
     // Android step counter
     public int androidSteps = 0;
@@ -68,7 +69,6 @@ public class StepDetectorService extends Service implements SensorEventListener 
     public String timestamp;
     public String day;
     public String hour;
-
 
     Intent intent;
     public static final String BROADCAST_ACTION = "com.example.unsteppable.mybroadcast";
@@ -241,8 +241,8 @@ public class StepDetectorService extends Service implements SensorEventListener 
             checkBadge3days();
             if(dayOfWeek == Calendar.SUNDAY){
                 checkBadgeWeek();
-            }
 
+            }
         }
     }
 
@@ -256,7 +256,20 @@ public class StepDetectorService extends Service implements SensorEventListener 
         boolean day_m_1_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_1),
                 day_m_2_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_2);
         if(day_m_1_reached && day_m_2_reached){
-            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"2", "Daily goal reached 3 days in a row!", "You reached your daily goal in the last three days, keep going!");
+            String title ="Daily goal reached 3 days in a row!";
+            String message ="You reached your daily goal in the last three days, keep going!";
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
+                    .setSmallIcon(badgeIcon)
+                    .setContentTitle(title)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(message))
+                    .setAutoCancel(true);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(5, builder.build());
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"2", title, message);
         }
 
     }
@@ -283,7 +296,20 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 day_m_5_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_5),
                 day_m_6_reached = UnsteppableOpenHelper.getReachedByDate(getBaseContext(),day_m_6);
         if(day_m_1_reached && day_m_2_reached && day_m_3_reached && day_m_4_reached && day_m_5_reached && day_m_6_reached){
-            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"3", "Daily goal reached all week, well done!", "You reached your daily goal every day for this week!");
+            String title ="Daily goal reached all week, well done!";
+            String message ="You reached your daily goal every day for this week!";
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
+                    .setSmallIcon(badgeIcon)
+                    .setContentTitle(title)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(message))
+                    .setAutoCancel(true);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
+            // notificationId is a unique int for each notification that you must define
+            notificationManager.notify(6, builder.build());
+            UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"3", title, message);
         }
     }
 
