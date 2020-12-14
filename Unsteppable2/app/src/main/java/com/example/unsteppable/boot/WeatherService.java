@@ -159,8 +159,6 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
     public void getCurrentWeather() {
         final LocationRequest locationRequest = new LocationRequest();
 
-        final double[] latitude = new double[1];
-        final double[] longitude = new double[1];
         locationRequest.setInterval(10000);
         locationRequest.setNumUpdates(1);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -181,12 +179,14 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                                 LocationServices.getFusedLocationProviderClient(activity)
                                         .removeLocationUpdates(this);
                                 if (locationResult != null && locationResult.getLocations().size() > 0) {
+                                    double latitude;
+                                    double longitude;
                                     int latestLocationIndex = locationResult.getLocations().size() - 1;
-                                    latitude[0] =
+                                    latitude =
                                             locationResult.getLocations().get(latestLocationIndex).getLatitude();
-                                    longitude[0] =
+                                    longitude =
                                             locationResult.getLocations().get(latestLocationIndex).getLongitude();
-                                    observableService.notifyAll(WeatherService.getWeatherFromApi(latitude[0], longitude[0]));
+                                    observableService.notifyAll(WeatherService.getWeatherFromApi(latitude, longitude));
                                 }
                             }
                         }, Looper.getMainLooper());
@@ -198,16 +198,9 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                 if (e instanceof ResolvableApiException) {
                     // Location settings are not satisfied, but this can be fixed
                     // by showing the user a dialog.
-                    try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(activity, activity.REQUEST_CODE_LOCATION_PERMISSION);
-                    } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
-                    }
+                        observableService.notifyAll(WeatherStatus.valueOf("UNKNOWN"));
                 }}
-                
+
         });
     }
 

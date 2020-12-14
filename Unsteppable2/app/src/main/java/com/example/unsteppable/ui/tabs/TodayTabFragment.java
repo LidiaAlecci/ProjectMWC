@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -32,11 +33,23 @@ import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.unsteppable.MainActivity;
 import com.example.unsteppable.R;
 import com.example.unsteppable.boot.WeatherService;
 import com.example.unsteppable.boot.WeatherStatus;
 import com.example.unsteppable.boot.StepDetectorService;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -87,6 +100,9 @@ public class TodayTabFragment extends Fragment implements Observer {
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
         WeatherService.getInstance().register(this);
+        weatherImage = root.findViewById(R.id.weather_image);
+        weatherText = (TextView) root.findViewById(R.id.weather_text);
+
 
         // BROADCAST
         this.getContext().registerReceiver(broadcastReceiver, new IntentFilter(StepDetectorService.BROADCAST_ACTION)); // BROADCAST
@@ -97,9 +113,37 @@ public class TodayTabFragment extends Fragment implements Observer {
         countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
         mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
-        WeatherService.getInstance().getCurrentWeather();
-        weatherImage = root.findViewById(R.id.weather_image);
-        weatherText = (TextView) root.findViewById(R.id.weather_text);
+
+        final LocationRequest locationRequest = new LocationRequest();
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
+        SettingsClient client = LocationServices.getSettingsClient(this.getActivity());
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                WeatherService.getInstance().getCurrentWeather();
+            }
+        });
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(getActivity(), ((MainActivity)getActivity()).REQUEST_CODE_LOCATION_PERMISSION);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                       WeatherStatus status = WeatherStatus.valueOf("UNKNOWN");
+                        weatherImage.setImageResource(status.getIcon());
+                        weatherText.setText(status.getName());
+                    }
+                }}
+
+        });
+
 
 
         return root;
