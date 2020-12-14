@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity{
 
 
     /*** PERMISSION ***/
-
+    // Like the tutorials made in class
     // Ask for permission
     private void getActivity() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity{
 
         }
     }
-
+    // Taken from https://stackoverflow.com/questions/34342816/android-6-0-multiple-permissions and adapted
     private  boolean checkPermissions() {
         int result;
         List<String> listPermissionsNeeded = new ArrayList<>();

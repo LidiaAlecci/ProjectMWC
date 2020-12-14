@@ -24,6 +24,8 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 public class UnsteppableOpenHelper extends SQLiteOpenHelper {
+    // code SQL similar to what we have done in the tutorials
+
     private static UnsteppableOpenHelper instance = null;
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "unsteppable";
@@ -340,7 +342,7 @@ public class UnsteppableOpenHelper extends SQLiteOpenHelper {
         String currentDay = currentDate.substring(0,10);
         return currentDay;
     }
-
+    // Utility to have something in the db in the last 4 days and some badges
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void insertSomeResult(SQLiteDatabase db) {
         Calendar calendar = Calendar.getInstance();

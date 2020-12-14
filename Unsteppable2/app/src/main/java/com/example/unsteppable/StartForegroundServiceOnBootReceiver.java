@@ -9,7 +9,8 @@ import androidx.annotation.RequiresApi;
 
 import com.example.unsteppable.boot.StepDetectorService;
 
-public class StartActivityOnBootReceiver extends BroadcastReceiver {
+public class StartForegroundServiceOnBootReceiver extends BroadcastReceiver {
+    // Taken from https://codinginflow.com/tutorials/android/start-app-on-boot and adapted
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onReceive(Context context, Intent intent) {

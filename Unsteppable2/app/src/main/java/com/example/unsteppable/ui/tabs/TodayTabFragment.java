@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +39,7 @@ public class TodayTabFragment extends Fragment {
     private int countedStep = 0;
     private int baseGoal = 3000;
     private int actualGoal = 3000;
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(Looper.myLooper());
     private ImageView weatherImage;
     private TextView weatherText;
 
