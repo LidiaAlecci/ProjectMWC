@@ -41,7 +41,7 @@ public class TodayTabFragment extends Fragment implements Observer {
     private int countedStep = 0;
     private int baseGoal = 3000;
     private int actualGoal = 3000;
-    private final Handler handler = new Handler(Looper.myLooper());
+    //private final Handler handler = new Handler(Looper.myLooper());
     private ImageView weatherImage;
     private TextView weatherText;
 
@@ -94,19 +94,19 @@ public class TodayTabFragment extends Fragment implements Observer {
         return root;
 
     }
-
+    /*
     private Runnable updateWeather = new Runnable() {
         @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
         public void run() {
             handler.postDelayed(this, TimeUnit.MINUTES.toMillis(120));
         }
-    };
+    };*/
 
     @Override
     public void update(Observable o, Object arg) {
         WeatherStatus status = (WeatherStatus) arg;
         weatherImage.setImageResource(status.getIcon());
         weatherText.setText(status.getName());
-        handler.post(updateWeather);
+        //handler.post(updateWeather);
     }
 }

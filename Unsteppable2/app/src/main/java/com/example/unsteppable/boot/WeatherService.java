@@ -149,7 +149,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
 
 
     //LOCATION PART
-    public WeatherStatus getCurrentWeather() {
+    public void getCurrentWeather() {
         final LocationRequest locationRequest = new LocationRequest();
 
         final double[] latitude = new double[1];
@@ -177,7 +177,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                     }
                 }, Looper.getMainLooper());
 
-        return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
+        //return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
     }
     private class ObservableWeatherService extends Observable{
         public void notifyAll(WeatherStatus status){

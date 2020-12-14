@@ -24,6 +24,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 import static com.example.unsteppable.MainActivity.CHANNEL_ID;
 import androidx.annotation.Nullable;
@@ -37,10 +38,12 @@ import com.example.unsteppable.settings.SettingsActivity;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-public class StepDetectorService extends Service implements SensorEventListener {
+public class StepDetectorService extends Service implements SensorEventListener, Observer {
     SensorManager sensorManager;
     Sensor sensorStepDetector;
     private static final String TAG = "STEP_SERVICE";
@@ -50,6 +53,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     int appIcon = R.mipmap.ic_launcher_round;
     int badgeIcon = R.drawable.ic_trophy_notification;
     double p = 0.0;// percent of change of actual goal based on weather and base goal
+    String weather_main;
     // Android step counter
     public int androidSteps = 0;
     public int baseGoal = 3000;
@@ -89,6 +93,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         createNotification(androidSteps);
         UnsteppableOpenHelper.insertDayReport(getBaseContext(), baseGoal, actualGoal);
         broadcastSensorValue();
+        WeatherService.getInstance().register(this);
     }
 
     private void checkValuesInDb(){
@@ -153,6 +158,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     }
 
     /** Called by startService() */
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.v(TAG, "Start");
@@ -165,7 +171,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
         //handler.removeCallbacks(updateBroadcastData);
         // call handler
         handler.post(updateBroadcastData);
-        handler.post(updatePWeather);
+        handler.post(updateWeather);
 
         sensorManager = (SensorManager) getSystemService(getApplicationContext().SENSOR_SERVICE);
         sensorStepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
@@ -344,6 +350,60 @@ public class StepDetectorService extends Service implements SensorEventListener 
         unregisterAlarmBroadcast2();
         serviceStopped = true;
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void update(Observable o, Object arg) {
+        WeatherStatus status = (WeatherStatus) arg;
+        weather_main = status.getName();
+        double lastP = p;
+        switch(weather_main) {
+            case "Thunderstorm":
+                Log.v(TAG, "Weather: Thunderstorm");
+                p = -0.5;// -50%
+                break;
+            case "Foggy":
+                Log.v(TAG, "Weather: Foggy");
+                p = -0.2;// -20%
+                break;
+            case "Misty":
+                Log.v(TAG, "Weather: Misty");
+                p = -0.2;// -20%
+                break;
+            case "Rainy":
+                Log.v(TAG, "Weather: Rainy");
+                p = -0.4;// -40%
+                break;
+            case "Snowy":
+                Log.v(TAG, "Weather: Snowy");
+                p = -0.3;// -30%
+                break;
+            case "Squall":
+                Log.v(TAG, "Weather: Squall");
+                p = -0.5;// -50%
+                break;
+            case "Tornado":
+                Log.v(TAG, "Weather: Tornado");
+                p = -0.5;// -50%
+                break;
+            case "Sunny":
+                Log.v(TAG, "Weather: Sunny");
+                p = +0.3;// +30%
+                break;
+            case "Cloudy":
+                Log.v(TAG, "Weather: Cloudy");
+                p = +0.2;// +20%
+                break;
+            default:
+                Log.v(TAG, "Weather: No Match");
+                p = 0.0;
+        }
+        updateActualGoal(lastP != p);
+        if(lastP != p){
+            createNotificationWeather(p);
+        }
+    }
+
     /** ToastRunnable in order to make toast message */
     private class ToastRunnable implements Runnable {
         int idText;
@@ -356,6 +416,20 @@ public class StepDetectorService extends Service implements SensorEventListener 
         }
     }
 
+    // updateWeather updates the weather every 3 hours
+    private Runnable updateWeather = new Runnable() {
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public void run() {
+            if (!serviceStopped) { // If service is still running keep it updated
+                // Check weather
+                WeatherService.getInstance().getCurrentWeather();
+                // After the delay this Runnable will be executed again
+                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
+            }
+        }
+    };
+    /*
     // updatePWeather updates the actualGoal based on the Weather every 3 hours
     private Runnable updatePWeather = new Runnable() {
 
@@ -415,7 +489,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
                 handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
             }
         }
-    };
+    };*/
 
     private void createNotificationWeather(double p) {
         String title;
