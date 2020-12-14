@@ -29,11 +29,13 @@ import com.example.unsteppable.db.UnsteppableOpenHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.TimeUnit;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
 
-public class TodayTabFragment extends Fragment {
+public class TodayTabFragment extends Fragment implements Observer {
     private WaveLoadingView mWaveLoad;
 
     private int countedStep = 0;
@@ -82,6 +84,7 @@ public class TodayTabFragment extends Fragment {
         countedStep = UnsteppableOpenHelper.getStepsByDayFromTab1(this.getContext(), fDate);
         mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
+        WeatherService.getInstance().register(this);
         WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
         Log.v("WEATHER", weather.getName());
         weatherImage = root.findViewById(R.id.weather_image);
@@ -106,4 +109,8 @@ public class TodayTabFragment extends Fragment {
         }
     };
 
+    @Override
+    public void update(Observable o, Object arg) {
+        handler.post(updateWeather);
+    }
 }

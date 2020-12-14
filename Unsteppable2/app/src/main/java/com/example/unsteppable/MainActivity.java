@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.unsteppable.boot.BackgroundServiceHelper;
 import com.example.unsteppable.boot.WeatherService;
+import com.example.unsteppable.boot.WeatherStatus;
 import com.example.unsteppable.settings.SettingsActivity;
 import com.google.android.material.navigation.NavigationView;
 import androidx.annotation.NonNull;
@@ -35,6 +36,8 @@ import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -101,7 +104,6 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.setupWithNavController(navigationView, navController);
         WeatherService weatherService = WeatherService.getInstance();
         weatherService.setActivity(this);
-        weatherService.getCurrentWeather();
 
         backgroundService.startService(this, this.getBaseContext());
         backgroundService.createNotificationChannel(this);
@@ -177,6 +179,17 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private void getLocation(){
+        if (ContextCompat.checkSelfPermission(
+                MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_CODE_LOCATION_PERMISSION
+            );
+        }
+    }
 
     // Ask for write external storage permission
     private void getWriteExternalStorage() {
@@ -211,18 +224,6 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private void getLocation(){
-        if (ContextCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE_LOCATION_PERMISSION
-            );
-
-        }
-    }
 
 
     @Override
@@ -250,6 +251,8 @@ public class MainActivity extends AppCompatActivity{
                             R.string.permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
+
+                break;
 
             case REQUEST_CODE_LOCATION_PERMISSION:
                 if (grantResults.length > 0 &&
