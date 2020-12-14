@@ -415,7 +415,7 @@ public class StepDetectorService extends Service implements SensorEventListener 
     };
 
     private void createNotificationSunny() {
-        String title ="Hey, it's sunny go for a walk!";
+        String title ="Hey, it's sunny, perfect for a walk!";
         String message ="Now your daily goal is " + actualGoal +" steps.";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext(), CHANNEL_ID)
                 .setSmallIcon(appIcon)
