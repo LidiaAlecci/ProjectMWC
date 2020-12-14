@@ -387,7 +387,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
                 p = -0.5;// -50%
                 break;
             case "Clear":
-                Log.v(TAG, "Weather: ClearF");
+                Log.v(TAG, "Weather: Clear");
                 p = +0.3;// +30%
                 break;
             case "Cloudy":

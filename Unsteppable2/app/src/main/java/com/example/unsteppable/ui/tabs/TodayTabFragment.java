@@ -115,12 +115,14 @@ public class TodayTabFragment extends Fragment implements Observer {
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
 
         final LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
         SettingsClient client = LocationServices.getSettingsClient(this.getActivity());
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
         task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
             @Override
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                Log.d("here", "todaytabfragment");
                 WeatherService.getInstance().getCurrentWeather();
             }
         });
@@ -131,12 +133,13 @@ public class TodayTabFragment extends Fragment implements Observer {
                     // Location settings are not satisfied, but this can be fixed
                     // by showing the user a dialog.
                     try {
+                        Log.d("here", "todaytabfragment failure");
                         // Show the dialog by calling startResolutionForResult(),
                         // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
                         resolvable.startResolutionForResult(getActivity(), ((MainActivity)getActivity()).REQUEST_CODE_LOCATION_PERMISSION);
                     } catch (IntentSender.SendIntentException sendEx) {
-                       WeatherStatus status = WeatherStatus.valueOf("UNKNOWN");
+                        WeatherStatus status = WeatherStatus.valueOf("UNKNOWN");
                         weatherImage.setImageResource(status.getIcon());
                         weatherText.setText(status.getName());
                     }

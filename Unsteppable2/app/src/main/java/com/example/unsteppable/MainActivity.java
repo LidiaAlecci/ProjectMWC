@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if(requestCode==1 && resultCode==RESULT_OK)
+        if(requestCode==REQUEST_CODE_LOCATION_PERMISSION && resultCode==RESULT_OK)
             WeatherService.getInstance().getCurrentWeather();
         super.onActivityResult(requestCode, resultCode, data);
     }
