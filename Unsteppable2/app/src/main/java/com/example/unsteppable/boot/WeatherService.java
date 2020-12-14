@@ -3,10 +3,13 @@ package com.example.unsteppable.boot;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.media.session.MediaSession;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -16,6 +19,9 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnTokenCanceledListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,7 +89,8 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         String content;
         //String city = "Lugano";
 
-        String apiKey = "e9fcc5721ca04b00b71bebed9a78bae3";
+//        String apiKey = "e9fcc5721ca04b00b71bebed9a78bae3";
+        String apiKey = "a26b3b70e9a9d91290b6a58219939c2b";
         String apiUrl = "https://api.openweathermap.org/data/2.5/weather?lat="+latitude+"&lon="+longitude+"&appid="+apiKey;
         //String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey;
 
@@ -127,11 +134,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         final LocationRequest locationRequest = new LocationRequest();
         final double[] latitude = new double[1];
         final double[] longitude = new double[1];
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-
 
         LocationServices.getFusedLocationProviderClient(this.activity)
                 .requestLocationUpdates(locationRequest, new LocationCallback() {
