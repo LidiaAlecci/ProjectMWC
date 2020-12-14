@@ -1,8 +1,8 @@
 package com.example.unsteppable.boot;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -11,16 +11,19 @@ import android.media.session.MediaSession;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.unsteppable.MainActivity;
 import com.example.unsteppable.ui.tabs.TodayTabFragment;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.common.data.DataBufferObserver;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationAvailability;
@@ -28,6 +31,10 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
@@ -50,7 +57,7 @@ import java.util.function.Consumer;
 //Wheather API part
 public final class WeatherService extends AsyncTask<String, Void, String> {
     private static WeatherService instance;
-    private AppCompatActivity activity;
+    private MainActivity activity;
     List<Observer> observerList = new LinkedList();
     ObservableWeatherService observableService = new ObservableWeatherService();
 
@@ -67,7 +74,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
     public void register(Observer o){
         observerList.add(o);
     }
-    public void setActivity(AppCompatActivity activity){
+    public void setActivity(MainActivity activity){
         this.activity = activity;
     }
 
@@ -157,28 +164,53 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         locationRequest.setInterval(10000);
         locationRequest.setNumUpdates(1);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+        SettingsClient client = LocationServices.getSettingsClient(this.activity);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                LocationServices.getFusedLocationProviderClient(activity)
+                        .requestLocationUpdates(locationRequest, new LocationCallback() {
 
-        LocationServices.getFusedLocationProviderClient(this.activity)
-                .requestLocationUpdates(locationRequest, new LocationCallback() {
-
-                    @Override
-                    public void onLocationResult(LocationResult locationResult) {
-                        super.onLocationResult(locationResult);
-                        LocationServices.getFusedLocationProviderClient(activity)
-                                .removeLocationUpdates(this);
-                        if (locationResult != null && locationResult.getLocations().size() > 0) {
-                            int latestLocationIndex = locationResult.getLocations().size() - 1;
-                            latitude[0] =
-                                    locationResult.getLocations().get(latestLocationIndex).getLatitude();
-                            longitude[0] =
-                                    locationResult.getLocations().get(latestLocationIndex).getLongitude();
-                            observableService.notifyAll(WeatherService.getWeatherFromApi(latitude[0], longitude[0]));
-                        }
+                            @Override
+                            public void onLocationResult(LocationResult locationResult) {
+                                super.onLocationResult(locationResult);
+                                LocationServices.getFusedLocationProviderClient(activity)
+                                        .removeLocationUpdates(this);
+                                if (locationResult != null && locationResult.getLocations().size() > 0) {
+                                    int latestLocationIndex = locationResult.getLocations().size() - 1;
+                                    latitude[0] =
+                                            locationResult.getLocations().get(latestLocationIndex).getLatitude();
+                                    longitude[0] =
+                                            locationResult.getLocations().get(latestLocationIndex).getLongitude();
+                                    observableService.notifyAll(WeatherService.getWeatherFromApi(latitude[0], longitude[0]));
+                                }
+                            }
+                        }, Looper.getMainLooper());
+            }
+        });
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(activity, activity.REQUEST_CODE_LOCATION_PERMISSION);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
                     }
-                }, Looper.getMainLooper());
+                }}
 
-        //return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);
+        //return WeatherService.getWeatherFromApi(latitude[0], longitude[0]);}
+        });
     }
+
     private class ObservableWeatherService extends Observable{
         public void notifyAll(WeatherStatus status){
             for (Observer o: observerList

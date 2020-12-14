@@ -1,22 +1,33 @@
 package com.example.unsteppable.ui.tabs;
 
+import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -94,19 +105,11 @@ public class TodayTabFragment extends Fragment implements Observer {
         return root;
 
     }
-    /*
-    private Runnable updateWeather = new Runnable() {
-        @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
-        public void run() {
-            handler.postDelayed(this, TimeUnit.MINUTES.toMillis(120));
-        }
-    };*/
 
     @Override
     public void update(Observable o, Object arg) {
         WeatherStatus status = (WeatherStatus) arg;
         weatherImage.setImageResource(status.getIcon());
         weatherText.setText(status.getName());
-        //handler.post(updateWeather);
     }
 }

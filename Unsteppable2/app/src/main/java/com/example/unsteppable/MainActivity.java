@@ -18,8 +18,10 @@ import android.widget.Toast;
 import com.example.unsteppable.boot.BackgroundServiceHelper;
 import com.example.unsteppable.boot.WeatherService;
 import com.example.unsteppable.settings.SettingsActivity;
+import com.example.unsteppable.ui.tabs.TodayTabFragment;
 import com.google.android.material.navigation.NavigationView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity{
     private BackgroundServiceHelper backgroundService;
     private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 45;
     private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 10003;
-    private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
+    public static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 46;
     private static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 47;
     private static final int REQUEST_RECEIVE_BOOT_COMPLETED_PERMISSION = 55;
@@ -121,6 +123,12 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(requestCode==1 && resultCode==RESULT_OK)
+            WeatherService.getInstance().getCurrentWeather();
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

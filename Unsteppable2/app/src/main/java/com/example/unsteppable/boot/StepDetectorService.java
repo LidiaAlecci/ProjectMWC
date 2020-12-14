@@ -494,7 +494,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
     private void createNotificationWeather(double p) {
         String title;
         if(p >=0){
-            title ="The weather is good perfect for a walk!";
+            title ="The weather is good, perfect for a walk!";
         }else{
             title ="Weather is bad, but you can still do some steps!";
         }
