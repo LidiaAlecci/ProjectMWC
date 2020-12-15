@@ -52,6 +52,13 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".StepDetectorService.ResponseReceiver">
+            <intent-filter>
+                <action android:name="YES_ACTION"/>
+                <action android:name="STOP_ACTION"/>
+
+            </intent-filter>
+        </receiver>
 
         <service android:name=".boot.StepDetectorService" />
 

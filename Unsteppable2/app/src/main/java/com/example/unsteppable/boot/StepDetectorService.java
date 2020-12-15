@@ -47,6 +47,10 @@ public class StepDetectorService extends Service implements SensorEventListener,
     SensorManager sensorManager;
     Sensor sensorStepDetector;
     private static final String TAG = "STEP_SERVICE";
+    private static final String YES_INCREASE_ACTION = "YesI";
+    private static final String YES_DECREASE_ACTION = "YesD";
+    private static final String NO_ACTION = "No";
+
     private UnsteppableOpenHelper databaseOpenHelper = null;
     private final Handler handler = new Handler(Looper.myLooper());
     private Notification notification = null;
@@ -65,6 +69,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
     AlarmManager alarmManager;
     BroadcastReceiver broadcastAlarmReceiver;
     BroadcastReceiver broadcastAlarmReceiver2;
+    BroadcastReceiver broadcastResponseReceiver;
     Calendar calendar;
 
     // SQLite Database
@@ -124,6 +129,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
         intendedTime = calendar.getTimeInMillis();
         registerAlarmBroadcast2();
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, intendedTime, 24*60*60*1000, pendingIntent2);
+        registerBroadcastResponse();
     }
 
     // utility to have current day and the timestamp in the right format
@@ -224,25 +230,44 @@ public class StepDetectorService extends Service implements SensorEventListener,
                     .setContentTitle("Congrats! You've reachead your daily goal!")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     // Set the intent that will fire when the user taps the notification
-                    .setContentIntent(pendingIntentNotification)
+                    //.setContentIntent(pendingIntentNotification)
                     .setAutoCancel(true);
             Calendar calendar = Calendar.getInstance();
             int hour24hrs = calendar.get(Calendar.HOUR_OF_DAY);
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
             Log.v(TAG, "Calendar hour of day = "+ hour24hrs);
+            String message;
+
+            int newGoal;
+            int notificationId = 3;
+            //Yes intent
+            Intent yesReceive = new Intent();
+            yesReceive.setAction(YES_INCREASE_ACTION);
+            yesReceive.putExtra("notificationId", notificationId);
+            newGoal = (int) (baseGoal + baseGoal*0.1);
             if(hour24hrs > 17){
-                builder.setContentText("This day is almost over, but why not try to push yourself further?")
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("This day is almost over, but why not try to push yourself further?"));
+                message = "This day is almost over, but why not try to push yourself further?\n Change it to: " + newGoal;
+
             }else{
-                builder.setContentText("Push your limits! Change your daily goal!\n")
-                        .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText("Push your limits! Change your daily goal!\n"));
+                message = "Push your limits! Change your daily goal!\n Change it to: " + newGoal;
             }
+            PendingIntent pendingIntentYes = PendingIntent.getBroadcast(this, 0, yesReceive, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            //No intent
+            Intent noReceive = new Intent();
+            noReceive.setAction(NO_ACTION);
+            noReceive.putExtra("notificationId", notificationId);
+            PendingIntent pendingIntentNo = PendingIntent.getBroadcast(this, 0, noReceive, PendingIntent.FLAG_UPDATE_CURRENT);
+            builder.setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(message))
+                    .addAction(0,"Yes", pendingIntentYes)
+                    .addAction(0,"No", pendingIntentNo);
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
             // notificationId is a unique int for each notification that you must define
-            notificationManager.notify(3, builder.build());
+            notificationManager.notify(notificationId, builder.build());
             UnsteppableOpenHelper.insertBadges(getBaseContext(), timestamp, day, hour,"1", "Daily goal reached!", "You reached your daily goal");
             checkBadge3days();
             if(dayOfWeek == Calendar.SUNDAY){
@@ -348,6 +373,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
         Log.v(TAG, "Stop");
         unregisterAlarmBroadcast();
         unregisterAlarmBroadcast2();
+        getBaseContext().unregisterReceiver(broadcastResponseReceiver);
         serviceStopped = true;
     }
 
@@ -516,12 +542,12 @@ public class StepDetectorService extends Service implements SensorEventListener,
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private void updateActualGoal(boolean actualGoalChanged) {
-        actualGoal = (int) (baseGoal + baseGoal*p);//
+    private void updateActualGoal(boolean baseGoalChanged) {
+        actualGoal = (int) (baseGoal + baseGoal*p);
         if(actualGoal <= 0){
             actualGoal = 1;
         }
-        if(actualGoalChanged && androidSteps >= actualGoal){
+        if(baseGoalChanged && androidSteps >= actualGoal){
             checkGoal(true);
         }
     }
@@ -541,7 +567,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void broadcastSensorValue() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-        int newBaseGoal = Integer. parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
+        int newBaseGoal = Integer.parseInt(preferences.getString(getApplicationContext().getResources().getString(R.string.base_goal), String.valueOf(baseGoal)));
         if(newBaseGoal != baseGoal){
             baseGoal = newBaseGoal;
             updateActualGoal(true);
@@ -555,6 +581,43 @@ public class StepDetectorService extends Service implements SensorEventListener,
         intent.putExtra("Actual_Goal_Int", actualGoal);
         // call sendBroadcast with the intent: sends a message to whoever is registered
         sendBroadcast(intent);
+    }
+    private void registerBroadcastResponse(){
+        broadcastResponseReceiver = new BroadcastReceiver() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                int notificationId = intent.getIntExtra("notificationId", -1);
+                if(YES_INCREASE_ACTION.equals(action)) {
+                    baseGoal =  (int) (baseGoal + baseGoal*0.1);
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString(getString(R.string.base_goal), String.valueOf(baseGoal));
+                    editor.apply();
+                    updateActualGoal(true);
+
+                    Log.v("RESPONSE_RECEIVER","Pressed Yes Increase");
+                }
+                else if(YES_DECREASE_ACTION.equals(action)) {
+                    baseGoal =  (int) (baseGoal - baseGoal*0.1);
+                    updateActualGoal(true);
+                    Log.v("RESPONSE_RECEIVER","Pressed Yes Decrease");
+                }else if(NO_ACTION.equals(action)) {
+                    Log.v("RESPONSE_RECEIVER","Pressed No");
+                }
+                if(notificationId != -1){
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+                    notificationManager.cancel(notificationId);
+                }
+            }
+        };
+        // register the receiver
+        IntentFilter intentFilter =  new IntentFilter();
+        intentFilter.addAction(YES_DECREASE_ACTION);
+        intentFilter.addAction(YES_INCREASE_ACTION);
+        intentFilter.addAction(NO_ACTION);
+        registerReceiver(broadcastResponseReceiver, intentFilter);
     }
 
     private void registerAlarmBroadcast2() {
@@ -573,7 +636,7 @@ public class StepDetectorService extends Service implements SensorEventListener,
                             .setContentTitle("Weekly report")
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                             // Set the intent that will fire when the user taps the notification
-                            .setContentIntent(pendingIntentNotification)
+                            //.setContentIntent(pendingIntentNotification)
                             .setAutoCancel(true);
                     Calendar calendar = Calendar.getInstance();
                     String day;
@@ -585,20 +648,41 @@ public class StepDetectorService extends Service implements SensorEventListener,
                             daysReached++;
                         }
                     }
+
+                    int notificationId = 4;
+                    //Yes intent
+                    Intent yesReceive = new Intent();
+                    yesReceive.putExtra("notificationId", notificationId);
                     String message;
+                    int newGoal;
                     if(daysReached > 3){
+                        yesReceive.setAction(YES_INCREASE_ACTION);
+                        newGoal = (int) (baseGoal + baseGoal*0.1);
                         message = "You were unstoppable!"+
-                                "Challenge yourself, change your goal!";
+                                "Challenge yourself, change your goal to "+ newGoal;
                     }else{
+                        yesReceive.setAction(YES_DECREASE_ACTION);
+                        newGoal = (int) (baseGoal - baseGoal*0.1);
                         message = "This week was tough, next one will be better! " +
-                                "There is no shame in decreasing your daily goal!";
+                                "There is no shame in decreasing your daily goal! Change it in "+ newGoal;
                     }
+
+
+                    PendingIntent pendingIntentYes = PendingIntent.getBroadcast(t, 12345, yesReceive, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    //No intent
+                    Intent noReceive = new Intent();
+                    noReceive.setAction(NO_ACTION);
+                    noReceive.putExtra("notificationId", notificationId);
+                    PendingIntent pendingIntentNo = PendingIntent.getBroadcast(t, 12345, noReceive, PendingIntent.FLAG_UPDATE_CURRENT);
                     builder.setContentText(message)
                             .setStyle(new NotificationCompat.BigTextStyle()
-                                    .bigText(message));
+                                    .bigText(message))
+                            .addAction(0,"Yes", pendingIntentYes)
+                            .addAction(0,"No", pendingIntentNo);
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(t);
                     // notificationId is a unique int for each notification that you must define
-                    notificationManager.notify(4, builder.build());
+                    notificationManager.notify(notificationId, builder.build());
                 }
 
             }
@@ -639,4 +723,5 @@ public class StepDetectorService extends Service implements SensorEventListener,
         alarmManager.cancel(pendingIntent);
         getBaseContext().unregisterReceiver(broadcastAlarmReceiver);
     }
+
 }
