@@ -381,52 +381,41 @@ public class StepDetectorService extends Service implements SensorEventListener,
     @Override
     public void update(Observable o, Object arg) {
         WeatherStatus status = (WeatherStatus) arg;
-        weather_main = status.getName();
         double lastP = p;
-        switch(weather_main) {
-            case "Thunderstorm":
-                Log.v(TAG, "Weather: Thunderstorm");
+        switch(status) {
+            case THUNDERSTORM:
                 p = -0.5;// -50%
                 break;
-            case "Foggy":
-                Log.v(TAG, "Weather: Foggy");
+            case FOG:
                 p = -0.2;// -20%
                 break;
-            case "Misty":
-                Log.v(TAG, "Weather: Misty");
+            case MIST:
                 p = -0.2;// -20%
                 break;
-            case "Rainy":
-                Log.v(TAG, "Weather: Rainy");
+            case RAIN:
                 p = -0.4;// -40%
                 break;
-            case "Snowy":
-                Log.v(TAG, "Weather: Snowy");
+            case SNOW:
                 p = -0.3;// -30%
                 break;
-            case "Squall":
-                Log.v(TAG, "Weather: Squall");
+            case SQUALL:
                 p = -0.5;// -50%
                 break;
-            case "Tornado":
-                Log.v(TAG, "Weather: Tornado");
-                p = -0.5;// -50%
+            case TORNADO:
+                p = -0.7;// -70%
                 break;
-            case "Clear":
-                Log.v(TAG, "Weather: Clear");
+            case CLEAR:
                 p = +0.3;// +30%
                 break;
-            case "Cloudy":
-                Log.v(TAG, "Weather: Cloudy");
+            case CLOUDS:
                 p = +0.2;// +20%
                 break;
             default:
-                Log.v(TAG, "Weather: No Match");
                 p = 0.0;
         }
         updateActualGoal(lastP != p);
         if(lastP != p){
-            createNotificationWeather(p);
+            createNotificationWeather(p, status);
         }
     }
 
@@ -455,74 +444,20 @@ public class StepDetectorService extends Service implements SensorEventListener,
             }
         }
     };
-    /*
-    // updatePWeather updates the actualGoal based on the Weather every 3 hours
-    private Runnable updatePWeather = new Runnable() {
 
-        @RequiresApi(api = Build.VERSION_CODES.N)
-        public void run() {
-            if (!serviceStopped) { // If service is still running keep it updated
-                // Check weather
-                WeatherStatus weather = WeatherService.getInstance().getCurrentWeather();
-                String weatherMain = weather.getName();
-                double lastP = p;
-                switch(weatherMain) {
-                    case "Thunderstorm":
-                        Log.v(TAG, "Weather: Thunderstorm");
-                        p = -0.5;// -50%
-                        break;
-                    case "Foggy":
-                        Log.v(TAG, "Weather: Foggy");
-                        p = -0.2;// -20%
-                        break;
-                    case "Misty":
-                        Log.v(TAG, "Weather: Misty");
-                        p = -0.2;// -20%
-                        break;
-                    case "Rainy":
-                        Log.v(TAG, "Weather: Rainy");
-                        p = -0.4;// -40%
-                        break;
-                    case "Snowy":
-                        Log.v(TAG, "Weather: Snowy");
-                        p = -0.3;// -30%
-                        break;
-                    case "Squall":
-                        Log.v(TAG, "Weather: Squall");
-                        p = -0.5;// -50%
-                        break;
-                    case "Tornado":
-                        Log.v(TAG, "Weather: Tornado");
-                        p = -0.5;// -50%
-                        break;
-                    case "Sunny":
-                        Log.v(TAG, "Weather: Sunny");
-                        p = +0.3;// +30%
-                        break;
-                    case "Cloudy":
-                        Log.v(TAG, "Weather: Cloudy");
-                        p = +0.2;// +20%
-                        break;
-                    default:
-                        Log.v(TAG, "Weather: No Match");
-                        p = 0.0;
-                }
-                updateActualGoal(lastP != p);
-                if(lastP != p){
-                    createNotificationWeather(p);
-                }
-                // After the delay this Runnable will be executed again
-                handler.postDelayed(this, TimeUnit.MINUTES.toMillis(3*60));
-            }
-        }
-    };*/
 
-    private void createNotificationWeather(double p) {
+    private void createNotificationWeather(double p, WeatherStatus status) {
         String title;
         if(p >=0){
             title ="The weather is good, perfect for a walk!";
         }else{
-            title ="Weather is bad, but you can still do some steps!";
+            //EASTER EGG
+            if(status == WeatherStatus.TORNADO) {
+                title = "Stay home unless you want to go to Oz!";
+            }
+            else{
+                title ="Weather is bad, but you can still do some steps!";
+            }
         }
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntentNotification = PendingIntent.getActivity(this, 0, notificationIntent, 0);
