@@ -55,6 +55,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 //Wheather API part
+//Weather tutorial: https://www.youtube.com/watch?v=D38UkFS5aIs
 public final class WeatherService extends AsyncTask<String, Void, String> {
     private static WeatherService instance;
     private MainActivity activity;
@@ -156,6 +157,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
 
 
     //LOCATION PART
+    //Location tutorial: https://www.youtube.com/watch?v=gDQnC-QA95Q
     public void getCurrentWeather() {
         final LocationRequest locationRequest = new LocationRequest();
 
