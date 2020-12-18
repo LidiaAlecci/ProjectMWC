@@ -55,6 +55,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 //Wheather API part
+//documentation:
+//https://droidbyme.medium.com/get-current-location-using-fusedlocationproviderclient-in-android-cb7ebf5ab88e
+
 public final class WeatherService extends AsyncTask<String, Void, String> {
     private static WeatherService instance;
     private MainActivity activity;
@@ -124,7 +127,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         try {
             //content = weather.execute("https://api.openweathermap.org/data/2.5/weather?q=Lugano&appid=e9fcc5721ca04b00b71bebed9a78bae3").get();
             content = weather.execute(apiUrl).get();
-            //First we will check data is retrieve successfully or not
+            //First we will check data is retrieved successfully or not
             Log.i("contentData", content);
 
             //JSON
@@ -186,6 +189,7 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
                                             locationResult.getLocations().get(latestLocationIndex).getLatitude();
                                     longitude =
                                             locationResult.getLocations().get(latestLocationIndex).getLongitude();
+                                    //notify all registered observers with new weather
                                     observableService.notifyAll(WeatherService.getWeatherFromApi(latitude, longitude));
 
                                 }
@@ -195,6 +199,8 @@ public final class WeatherService extends AsyncTask<String, Void, String> {
         });
     }
 
+    //this is done in order to be able to notify classes that registered for weather updates
+    //when the async task finishes
     private class ObservableWeatherService extends Observable{
         public void notifyAll(WeatherStatus status){
             for (Observer o: observerList

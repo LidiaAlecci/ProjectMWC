@@ -10,19 +10,17 @@ import androidx.preference.PreferenceManager;
 
 import com.example.unsteppable.R;
 
+/* Documentation used:
+https://developer.android.com/guide/topics/ui/settings
+
+Implementing OnSharedPreferenceChangeListener in order to change activity theme when user selects
+a new one
+* */
+
 public class SettingsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                if (key.equals(String.valueOf(R.string.app_theme_option))) {
-                    setTheme(prefs.getString(getResources().getString(R.string.app_theme_option), "Light"));
-                }
-            }
-
-        };
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
         getSupportFragmentManager()
@@ -30,6 +28,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                 .replace(android.R.id.content, new SettingsFragment())
                 .commit();
 
+        //change back arrow to ensure consistency
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -53,6 +52,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         }
     }
 
+    //register this as a listener for preferences changes
     @Override
     protected void onResume() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
@@ -60,6 +60,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
         super.onResume();
     }
 
+    //while paused, the user can't change settings, so unregister
     @Override
     protected void onPause() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
@@ -68,8 +69,6 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        int i=0;
-        i++;
         if (key.equals(getResources().getString(R.string.app_theme_option))) {
             setTheme(sharedPreferences.getString(getResources().getString(R.string.app_theme_option), "Light"));
         }

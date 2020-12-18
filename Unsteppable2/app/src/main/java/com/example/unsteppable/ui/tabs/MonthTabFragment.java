@@ -98,6 +98,8 @@ public class MonthTabFragment extends Fragment {
         }
 
         Column column = cartesian.column(data);
+
+        //change chart color based on theme
         TypedValue primaryValue = new TypedValue();
         String prefix="#";
         if (!this.requireContext().getTheme().resolveAttribute(R.attr.colorPrimary, primaryValue, true)) {

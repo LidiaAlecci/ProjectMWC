@@ -6,6 +6,7 @@
         <item name="colorPrimaryVariant">@color/secondaryDarkColor</item>
         <item name="colorSecondary">@color/primaryColor</item>
         <item name="colorSecondaryVariant">@color/primaryDarkColor</item>
+        <item name="colorOnBackground">@android:color/white</item>
         <item name="colorOnPrimary">@color/primaryTextColor</item>
         <item name="colorOnSecondary">@color/primaryTextColor</item>
         <item name="tabBackground">@color/cardview_dark_background</item>

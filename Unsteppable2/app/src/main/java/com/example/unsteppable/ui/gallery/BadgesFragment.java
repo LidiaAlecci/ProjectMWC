@@ -32,23 +32,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class GalleryFragment extends Fragment {
+//the dynamic list was built by looking at this tutorials:
+//https://www.freakyjolly.com/add-list-item-in-listview-android-example/#.X9aOcy9h3OQ
+//https://guides.codepath.com/android/Using-an-ArrayAdapter-with-ListView
+//
+public class BadgesFragment extends Fragment {
 
-    private GalleryViewModel galleryViewModel;
     private ArrayList<Badge> badges;
-    Calendar cal = Calendar.getInstance();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        galleryViewModel = new GalleryViewModel();
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
-        /*final TextView textView = root.findViewById(R.id.text_gallery);
-        galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });*/
+
         ListView listview = root.findViewById(R.id.badges_list);
         badges = UnsteppableOpenHelper.getAllBadges(getContext());
         final List<UnsteppableOpenHelper.Badge> badgesList = new ArrayList<>(badges);

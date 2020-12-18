@@ -72,6 +72,10 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.
                 getDefaultSharedPreferences(getApplicationContext());
+        //apply theme at startup
+        //dark theme implemented thanks to tutorials:
+        //https://medium.com/@merciero/implementing-dark-theme-on-android-2a786b1f6f91
+        //https://developer.android.com/training/data-storage/shared-preferences
         String theme = preferences.getString(getResources().getString(R.string.app_theme_option), "Light");
         setTheme(theme);
         super.onCreate(savedInstanceState);
@@ -94,7 +98,7 @@ public class MainActivity extends AppCompatActivity{
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_gallery)
-                .setDrawerLayout(drawer)
+                .setOpenableLayout(drawer)
                 .build();
 
 
@@ -103,6 +107,9 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.
                 setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        //WeatherService needs an activity in which to operate
+        //this increases coupling, but it's either this or having even more stuff in this class
         WeatherService weatherService = WeatherService.getInstance();
         weatherService.setActivity(this);
 
@@ -111,6 +118,7 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+    //utility method for changing the theme when the user changes it in settings
     private void setTheme(String theme) {
         switch(theme){
             case "Light":
@@ -123,6 +131,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    //useful when asking user to turn on their location
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if(requestCode==REQUEST_CODE_LOCATION_PERMISSION && resultCode==RESULT_OK)

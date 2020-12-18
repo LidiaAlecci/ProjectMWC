@@ -77,6 +77,8 @@ public class WeekTabFragment extends Fragment {
         }
 
         Column column = cartesian.column(data);
+
+        //change colors based on theme
         TypedValue primaryValue = new TypedValue();
         String prefix="#";
         if (!this.requireContext().getTheme().resolveAttribute(R.attr.colorPrimary, primaryValue, true)) {

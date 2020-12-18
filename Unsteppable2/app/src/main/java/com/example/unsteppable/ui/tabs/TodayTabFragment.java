@@ -1,34 +1,17 @@
 package com.example.unsteppable.ui.tabs;
 
-import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,9 +23,7 @@ import com.example.unsteppable.boot.WeatherStatus;
 import com.example.unsteppable.boot.StepDetectorService;
 import com.example.unsteppable.db.UnsteppableOpenHelper;
 import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -55,19 +36,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.TimeUnit;
 
 import me.itangqi.waveloadingview.WaveLoadingView;
-
+//this implements observer in order to receive updates from WeatherService, since it provides
+//an async service
 public class TodayTabFragment extends Fragment implements Observer {
     private WaveLoadingView mWaveLoad;
     private View root;
     private int countedStep = 0;
     private int baseGoal = 3000;
     private int actualGoal = 3000;
-    //private final Handler handler = new Handler(Looper.myLooper());
-    private ImageView weatherImage;
-    private TextView weatherText;
+    private ImageView mWeatherImage;
+    private TextView mWeatherText;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -100,8 +80,8 @@ public class TodayTabFragment extends Fragment implements Observer {
         mWaveLoad = root.findViewById(R.id.waveLoadingView);
         mWaveLoad.setAnimDuration(5000);
         WeatherService.getInstance().register(this);
-        weatherImage = root.findViewById(R.id.weather_image);
-        weatherText = (TextView) root.findViewById(R.id.weather_text);
+        mWeatherImage = root.findViewById(R.id.weather_image);
+        mWeatherText = (TextView) root.findViewById(R.id.weather_text);
 
 
         // BROADCAST
@@ -114,6 +94,10 @@ public class TodayTabFragment extends Fragment implements Observer {
         mWaveLoad.setProgressValue(countedStep*100/actualGoal);
         mWaveLoad.setCenterTitle(String.valueOf(countedStep));
 
+        //check if location is enabled; if not, ask user to enable it
+        //if it is, ask for the weather. Documentation:
+        //https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
+        //https://stackoverflow.com/questions/43518520/how-to-ask-user-to-enable-gps-at-the-launch-of-application
         final LocationRequest locationRequest = new LocationRequest();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
@@ -122,10 +106,10 @@ public class TodayTabFragment extends Fragment implements Observer {
         task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
             @Override
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                Log.d("here", "todaytabfragment");
                 WeatherService.getInstance().getCurrentWeather();
             }
         });
+        //ask user to turn on location if location fails
         task.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -133,15 +117,16 @@ public class TodayTabFragment extends Fragment implements Observer {
                     // Location settings are not satisfied, but this can be fixed
                     // by showing the user a dialog.
                     try {
-                        Log.d("here", "todaytabfragment failure");
                         // Show the dialog by calling startResolutionForResult(),
                         // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(getActivity(), ((MainActivity)getActivity()).REQUEST_CODE_LOCATION_PERMISSION);
+                        resolvable.startResolutionForResult(getActivity(),
+                                ((MainActivity)getActivity()).REQUEST_CODE_LOCATION_PERMISSION);
                     } catch (IntentSender.SendIntentException sendEx) {
+                        //if the intent can't be sent, just show an error message for the weather
                         WeatherStatus status = WeatherStatus.valueOf("UNKNOWN");
-                        weatherImage.setImageResource(status.getIcon());
-                        weatherText.setText(status.getName());
+                        mWeatherImage.setImageResource(status.getIcon());
+                        mWeatherText.setText(status.getName());
                     }
                 }}
 
@@ -156,7 +141,7 @@ public class TodayTabFragment extends Fragment implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         WeatherStatus status = (WeatherStatus) arg;
-        weatherImage.setImageResource(status.getIcon());
-        weatherText.setText(status.getName());
+        mWeatherImage.setImageResource(status.getIcon());
+        mWeatherText.setText(status.getName());
     }
 }

@@ -15,7 +15,10 @@ import com.example.unsteppable.ui.tabs.*;
 /**
  * A [FragmentPagerAdapter] that returns a fragment corresponding to
  * one of the sections/tabs/pages.
+ * Adapted from:
+ * https://github.com/atilsamancioglu/A18-TabbedJavaFragment/blob/master/app/src/main/java/com/atilsamancioglu/tabbedjavafragment/ui/main/SectionsPagerAdapter.java
  */
+
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @StringRes
@@ -23,13 +26,13 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     private final Context mContext;
 
     public SectionsPagerAdapter(Context context, FragmentManager fm) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mContext = context;
     }
 
     @Override
     public Fragment getItem(int position){
-        // getItem is called to instantiate the fragment for the given page.
+        // getItem is called to instantiate the fragment for the given page. Tabs start at 0
         switch(position){
             case 1:
                 return WeekTabFragment.newInstance();
